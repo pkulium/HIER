@@ -128,9 +128,9 @@ def initialize_model(args, device):
             raise ValueError('Model not implemented for CIFAR-100')
     else:
         raise ValueError('The dataset is not implemented for mtl yet')
-    if args.cuda:
-        nn_layers = nn_layers.cuda(device)
-    else: raise ValueError('Wrong input for the --mtl_model and --global_model, only one is valid')
+    # if args.cuda:
+    #     nn_layers = nn_layers.cuda(device)
+    # else: raise ValueError('Wrong input for the --mtl_model and --global_model, only one is valid')
 
     model = Local_Model(nn_layers=nn_layers,
                         lr_method=args.lr_method,

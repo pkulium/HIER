@@ -5,6 +5,7 @@
 # 3. Server send the aggregated information back to clients
 import copy
 from utils.average_weights import average_weights
+from utils.average_weights import average_weights_cloud
 import torch
 
 class Cloud():
@@ -48,8 +49,13 @@ class Cloud():
             sample_num = [1]*args.num_edges
         else:
             sample_num = [snum for snum in self.sample_registration.values()]
-        self.update_state_dict = average_weights(w=received_dict,
-                                                 s_num=sample_num)
+        # self.update_state_dict = average_weights(w=received_dict,
+        #                                          s_num=sample_num)
+        edge_ids = [key for key in self.receiver_buffer.keys()]
+        self.update_state_dict = average_weights_cloud(w=received_dict,
+                                                 s_num=sample_num,
+                                                 edge_learning_rate = [args.edge_learning_rate[edge_id] for edge_id in edge_ids]
+                                                 )
         sd = self.model.state_dict()
         for key in sd.keys():
             sd[key] = torch.add(self.model.state_dict()[key], self.update_state_dict[key])

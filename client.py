@@ -81,7 +81,6 @@ class Client():
         edgeserver.receive_from_client(client_id= self.id,
                                         cshared_state_dict = copy.deepcopy(self.q_update.nn_layers.state_dict())
                                         )
-        return real_q
 
     def receive_from_edgeserver(self, shared_state_dict):
         self.receiver_buffer = shared_state_dict

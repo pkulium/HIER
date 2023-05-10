@@ -116,7 +116,9 @@ def dirichlet_split_shortage_handle(dataclass_index, sampleOfClass, assigned_cls
                                                                         sampleOfClass=shortage,
                                                                         assigned_cls=max_cls,
                                                                         sampleofID_c=sampleofID_c,
-                                                                        random_seed=random_seed)
+                                                                        random_seed=random_seed,
+                                                                        num_classes = 10
+                                                                        )
     return sampleofID_c, dataclass_index
 
 

@@ -8,7 +8,7 @@ import numpy as np
 from tqdm import tqdm
 import torch.nn as nn
 from torch.autograd import Variable
-
+import random
 from client import Client
 from edge import Edge
 from cloud import Cloud
@@ -18,6 +18,7 @@ from fednn.cifar10cnn import cifar_cnn_3conv
 from fednn.mnist_lenet import mnist_lenet
 from fednn.resnet import resnet18
 from fednn.cifar100mobilenet import mobilenet
+from utils.get_reference import get_reference
 
 
 
@@ -104,6 +105,69 @@ def initialize_global_nn(args):
     else: raise ValueError(f"Dataset {args.dataset} Not implemented")
     return global_nn
 
+def get_reference(num_reference, dimension):
+    if num_reference == 0:
+        return torch.eye(dimension)
+    nonzero_per_reference =  dimension // num_reference
+    reference = torch.zeros((num_reference,  dimension))
+    parameter_index_random = list(range( dimension))
+    random.shuffle(parameter_index_random)
+
+    for reference_index in range(num_reference):
+        index = parameter_index_random[reference_index * nonzero_per_reference: (reference_index + 1) * nonzero_per_reference]
+        index = torch.tensor(index)
+        reference[reference_index][index] = 1
+    return reference
+
+def get_s_prime():
+    return None
+
+
+def contra(cos_client_ref):
+        epsilon = 1e-9
+        n = len(cos_client_ref)
+        client_learning_rate = torch.ones(len(cos_client_ref)) 
+
+        cos = torch.nn.CosineSimilarity(dim=0, eps=1e-9)
+        tao = torch.zeros(n)
+        topk = n // 5
+        t = 0.5
+        delta = 0.1
+
+        cs = torch.zeros((n, n))
+        for i in range(n):
+            for j in range(n):
+                if i == j:
+                    continue
+                cs[i][j] = cos(cos_client_ref[i], cos_client_ref[j]).item()
+
+        maxcs = torch.max(cs, dim = 1).values + epsilon
+        for i in range(n):
+            for j in range(n):
+                if i == j:
+                    continue
+                if maxcs[i] < maxcs[j]:
+                    cs[i][j] = cs[i][j] * maxcs[i] / maxcs[j]
+
+        for i in range(n):
+            tao[i] = torch.mean(torch.topk(cs[i], topk).values)
+        #     if tao[i] > t:
+        #         client_reputation[i] -= delta 
+        #     else:
+        #         client_reputation[i] += delta 
+
+        #  Pardoning: reweight by the max value seen
+        client_learning_rate = torch.ones((n)) - tao
+        client_learning_rate /= torch.max(client_learning_rate)
+        client_learning_rate[client_learning_rate==1] = 0.99
+        client_learning_rate = (torch.log((client_learning_rate / (1 - client_learning_rate)) + epsilon) + 0.5)
+        client_learning_rate[(torch.isinf(client_learning_rate) + client_learning_rate > 1)] = 1
+        client_learning_rate[(client_learning_rate < 0)] = 0
+        client_learning_rate /= torch.sum(client_learning_rate)
+        # edge_learning_rate = {id: sum([client_learning_rate[k] for k in tmp.keys()]) for id, tmp in cos_client_ref.items()}
+        # print(client_learning_rate)
+        return client_learning_rate
+
 def Hier_Local_QSGD(args):
     #make experiments repeatable
     torch.manual_seed(args.seed)
@@ -151,6 +215,29 @@ def Hier_Local_QSGD(args):
                               args=args,
                               device=device)
                        )
+        if i >= args.num_honest_client:
+            if args.attack == 'target_attack':
+                for idx in clients[i].train_loader.dataset.idxs:
+                    clients[i].train_loader.dataset.dataset.targets[idx] = 7
+            elif args.attack == 'backdoor_attack':
+                for idx in clients[i].train_loader.dataset.idxs:
+                    clients[i].train_loader.dataset.dataset.targets[idx] = 7
+                    clients[i].train_loader.dataset.dataset.data[idx][-1, -1, :] = 255
+        shared_layers = copy.deepcopy(clients[0].model.nn_layers)
+
+    if args.model == 'lenet':
+        last_layer = torch.flatten(shared_layers.fc2.weight)
+    elif args.model == 'cnn_complex':
+        last_layer = torch.flatten(shared_layers.fc_layer[-1].weight)
+    elif args.model == 'resnet18':
+        last_layer = torch.flatten(shared_layers.linear.weight)
+    args.reference  = get_reference(args.num_reference, last_layer.size()[0])
+    args.reference.to(device)
+    s_prime = get_s_prime()    
+    args.client_learning_rate = {i: 1 / args.num_clients for i in range(args.num_clients)}
+    args.edge_learning_rate = {i: 1 / args.num_edges for i in range(args.num_edges)}
+    # print(args.client_learning_rate)
+    # print(args.edge_learning_rate)
 
     initilize_parameters = list(clients[0].model.nn_layers.parameters())
     nc = len(initilize_parameters)
@@ -180,7 +267,9 @@ def Hier_Local_QSGD(args):
         cids = list (set(cids) - set(selected_cids))
         edges.append(Edge(id = i,
                           cids = selected_cids,
-                          shared_layers = copy.deepcopy(clients[0].model.nn_layers)))
+                          shared_layers = copy.deepcopy(clients[0].model.nn_layers),
+                          args=args
+                          ))
         [edges[i].client_register(clients[cid]) for cid in selected_cids]
         edges[i].all_trainsample_num = sum(edges[i].sample_registration.values())
         p_clients[i] = [sample / float(edges[i].all_trainsample_num) for sample in
@@ -208,6 +297,7 @@ def Hier_Local_QSGD(args):
     for num_comm in tqdm(range(args.num_communication)):
         cloud.refresh_cloudserver()
         [cloud.edge_register(edge=edge) for edge in edges]
+        cos_client_ref = {}
         for num_edgeagg in range(args.num_edge_aggregation):
             for i,edge in enumerate(edges):
                 edge.refresh_edgeserver()
@@ -244,8 +334,13 @@ def Hier_Local_QSGD(args):
                 # edge_loss[i] = client_loss
                 # edge_sample[i] = sum(edge.sample_registration.values())
 
-                edge.aggregate(args)
-
+                cos_client_ref_ = edge.aggregate(args)
+                for client_id in cos_client_ref_:
+                    cos_client_ref[client_id] = cos_client_ref_[client_id]
+        args.client_learning_rate = contra(cos_client_ref)
+        args.edge_learning_rate = {edge.id: sum([args.client_learning_rate[client_id] for client_id in edge.id_registration]) for edge in edges}
+        print(args.client_learning_rate)
+        print(args.edge_learning_rate)
         # Now begin the cloud aggregation
         for edge in edges:
             edge.send_to_cloudserver(cloud, args.q_ec, args.q_method)

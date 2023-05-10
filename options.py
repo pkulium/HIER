@@ -7,13 +7,13 @@ def args_parser():
     parser.add_argument(
         '--dataset',
         type = str,
-        default = 'cifar10',
+        default = 'mnist',
         help = 'name of the dataset: mnist, cifar10'
     )
     parser.add_argument(
         '--model',
         type = str,
-        default = 'cnn',
+        default = 'lenet',
         help='name of model. mnist: logistic, lenet; cifar10: cnn_tutorial, cnn_complex'
     )
     parser.add_argument(
@@ -38,13 +38,13 @@ def args_parser():
     parser.add_argument(
         '--num_communication',
         type = int,
-        default=1,
+        default=100,
         help = 'number of communication rounds with the cloud server'
     )
     parser.add_argument(
         '--num_local_update',
         type=int,
-        default=1,
+        default=50,
         help='number of local update (tau_1)'
     )
     parser.add_argument(
@@ -70,13 +70,13 @@ def args_parser():
     parser.add_argument(
         '--lr',
         type = float,
-        default = 0.001,
+        default = 0.1,
         help = 'initial learning rate of the SGD when trained on client'
     )
     parser.add_argument(
         '--lr_decay',
         type = float,
-        default= 1.0,
+        default= 0.992,
         help = 'lr decay rate'
     )
     parser.add_argument(
@@ -107,14 +107,14 @@ def args_parser():
     parser.add_argument(
         '--iid',
         type = int,
-        default = 1,
+        default = -1,
         help = 'distribution of the data, 1,0,-1（dirichlet non-iid, -2(one-class)'
     )
 
     parser.add_argument(
         '--alpha',
         type = float,
-        default=100,
+        default=1,
         help='Parameter of the Dirichlet Distribution'
     )
 
@@ -128,13 +128,13 @@ def args_parser():
     parser.add_argument(
         '--num_clients',
         type = int,
-        default = 1,
+        default = 20,
         help = 'number of all available clients'
     )
     parser.add_argument(
         '--num_edges',
         type = int,
-        default= 1,
+        default= 4,
         help= 'number of edges'
     )
     parser.add_argument(
@@ -201,6 +201,7 @@ def args_parser():
     parser.add_argument(
         '--clients_per_edge',
         type = str,
+        default= '5',
         help = 'number of the clients_per_edge'
     )
 
@@ -248,6 +249,27 @@ def args_parser():
     parser.add_argument(
         '--adjust',
         action= 'store_true'
+    )
+
+    parser.add_argument(
+        '--num_reference',
+        type=int,
+        default = 0,
+        help='num_reference'
+    )
+
+    parser.add_argument(
+        '--attack',
+        type=str,
+        default = 'target_attack',
+        help='type of attack'
+    )
+
+    parser.add_argument(
+        '--num_honest_client',
+        type = int,
+        default = 15,
+        help = 'verbose for print progress bar'
     )
     args = parser.parse_args()
     args.cuda = torch.cuda.is_available()
