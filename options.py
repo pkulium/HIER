@@ -7,13 +7,13 @@ def args_parser():
     parser.add_argument(
         '--dataset',
         type = str,
-        default = 'mnist',
+        default = 'cifar10',
         help = 'name of the dataset: mnist, cifar10'
     )
     parser.add_argument(
         '--model',
         type = str,
-        default = 'lenet',
+        default = 'cnn_complex',
         help='name of model. mnist: logistic, lenet; cifar10: cnn_tutorial, cnn_complex'
     )
     parser.add_argument(
@@ -44,7 +44,7 @@ def args_parser():
     parser.add_argument(
         '--num_local_update',
         type=int,
-        default=50,
+        default=400,
         help='number of local update (tau_1)'
     )
     parser.add_argument(
