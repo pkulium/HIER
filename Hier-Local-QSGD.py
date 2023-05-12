@@ -8,7 +8,7 @@ import numpy as np
 from tqdm import tqdm
 import torch.nn as nn
 from torch.autograd import Variable
-import random
+
 from client import Client
 from edge import Edge
 from cloud import Cloud
@@ -18,7 +18,6 @@ from fednn.cifar10cnn import cifar_cnn_3conv
 from fednn.mnist_lenet import mnist_lenet
 from fednn.resnet import resnet18
 from fednn.cifar100mobilenet import mobilenet
-from utils.get_reference import get_reference
 
 
 
@@ -121,8 +120,7 @@ def get_reference(num_reference, dimension):
 
 def get_s_prime():
     return None
-
-
+    
 def contra(cos_client_ref):
         epsilon = 1e-9
         n = len(cos_client_ref)
@@ -224,6 +222,7 @@ def Hier_Local_QSGD(args):
                     clients[i].train_loader.dataset.dataset.targets[idx] = 7
                     clients[i].train_loader.dataset.dataset.data[idx][-1, -1, :] = 255
     shared_layers = copy.deepcopy(clients[0].model.nn_layers)
+    shared_layers = copy.deepcopy(clients[0].model.nn_layers)
     if args.model == 'lenet':
         last_layer = torch.flatten(shared_layers.fc2.weight)
     elif args.model == 'cnn_complex':
@@ -231,13 +230,11 @@ def Hier_Local_QSGD(args):
     elif args.model == 'resnet18':
         last_layer = torch.flatten(shared_layers.linear.weight)
     args.reference  = get_reference(args.num_reference, last_layer.size()[0])
-    args.reference.to(device)
+    args.reference = args.reference.to(device)
     s_prime = get_s_prime()    
     args.client_learning_rate = {i: 1 / args.num_clients for i in range(args.num_clients)}
     args.edge_learning_rate = {i: 1 / args.num_edges for i in range(args.num_edges)}
-    # print(args.client_learning_rate)
-    # print(args.edge_learning_rate)
-
+    
     initilize_parameters = list(clients[0].model.nn_layers.parameters())
     nc = len(initilize_parameters)
     for client in clients:
