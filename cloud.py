@@ -50,7 +50,7 @@ class Cloud():
         else:
             sample_num = [snum for snum in self.sample_registration.values()]
         # self.update_state_dict = average_weights(w=received_dict,
-        #                                          s_num=sample_num)
+                                                #  s_num=sample_num)
         edge_ids = [key for key in self.receiver_buffer.keys()]
         self.update_state_dict = average_weights_cloud(w=received_dict,
                                                  s_num=sample_num,
@@ -68,4 +68,3 @@ class Cloud():
     def send_to_edge(self, edge):
         edge.receive_from_cloudserver(copy.deepcopy(self.model.state_dict()))
         return None
-
