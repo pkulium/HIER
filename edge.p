@@ -10,7 +10,6 @@ import copy
 from utils.average_weights import average_weights
 from utils.average_weights import average_weights_edge
 from fednn.intialize_model import initialize_model
-from utils.average_weights import average_weights_cloud
 import torch
 from utils.quantization import quantization_nne
 
@@ -42,6 +41,7 @@ class Edge():
         self.model = shared_layers
         # self.shared_state_dict = shared_layers.state_dict()
         self.clock = []
+        self.args = args
         self.G = {}
         self.cos_client_ref = {}
         self.args = args
@@ -69,26 +69,27 @@ class Edge():
         """
         received_dict = [dict for dict in self.receiver_buffer.values()]
         sample_num = [snum for snum in self.sample_registration.values()]
-        # self.update_state_dict = average_weights(w = received_dict,
-        #                                          s_num= sample_num)
         client_ids = [key for key in self.receiver_buffer.keys()]
         self.update_state_dict = average_weights_edge(w = received_dict,
                                                  s_num= sample_num,
                                                  client_learning_rate = [args.client_learning_rate[client_id] for client_id in client_ids],
                                                  edge_learning_rate = args.edge_learning_rate[self.id]
                                                  )
+        # self.update_state_dict = average_weights(w = received_dict,
+                                                #  s_num= sample_num)
         sd = self.model.state_dict()
         for key in sd.keys():
             sd[key]= torch.add(self.model.state_dict()[key], self.update_state_dict[key])
         self.model.load_state_dict(sd)
         # print('edge after update')
         # print(self.model.state_dict()['stem.0.conv.weight'])
+        
         for i in range(len(client_ids)):
             client_id = client_ids[i]
             if args.model == 'lenet':
                 last_layer = torch.flatten(received_dict[i]['fc2.weight'])
             elif args.model == 'cnn_complex':
-                last_layer = torch.flatten(shared_layers.fc_layer[-1].weight)
+                last_layer = torch.flatten(received_dict[i]['fc_layer.6.weight'])
             elif args.model == 'resnet18':
                 last_layer = torch.flatten(received_dict[i]['linear.weight'])
             if torch.linalg.norm(last_layer) > 1:
@@ -96,6 +97,7 @@ class Edge():
             self.G[client_id] = self.G.get(client_id, 0) + last_layer
             self.cos_client_ref[client_id] = args.reference.matmul(self.G[client_id])
         return self.cos_client_ref
+
 
 
     def send_to_client(self, client):
@@ -116,4 +118,3 @@ class Edge():
     def receive_from_cloudserver(self, shared_state_dict):
         self.model.load_state_dict(shared_state_dict)
         return None
-
