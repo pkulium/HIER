@@ -12,5 +12,5 @@
 
 # LOAD MODULES, INSERT CODE, AND RUN YOUR PROGRAMS HERE
 module load ml-gpu/20220928
-cd /work/LAS/wzhang-lab/mingl/code/Hier_QSGD/
+cd /work/LAS/wzhang-lab/mingl/HIER
 ml-gpu /work/LAS/wzhang-lab/mlgpuvenv-20220928/bin/python Hier-Local-QSGD.py --dataset cifar10 --model cnn_complex --num_clients 100 --num_honest_client 100 --alpha 1 --attack target_attack 
