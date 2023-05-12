@@ -88,7 +88,7 @@ class Edge():
             if args.model == 'lenet':
                 last_layer = torch.flatten(received_dict[i]['fc2.weight'])
             elif args.model == 'cnn_complex':
-                last_layer = torch.flatten(received_dict[i]['fc_layer[-1].weight'])
+                last_layer = torch.flatten(shared_layers.fc_layer[-1].weight)
             elif args.model == 'resnet18':
                 last_layer = torch.flatten(received_dict[i]['linear.weight'])
             if torch.linalg.norm(last_layer) > 1:
