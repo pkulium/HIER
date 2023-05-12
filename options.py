@@ -100,7 +100,7 @@ def args_parser():
     parser.add_argument(
         '--verbose',
         type = int,
-        default = 0,
+        default = 1,
         help = 'verbose for print progress bar'
     )
     #setting for federeated learning
