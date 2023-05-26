@@ -76,12 +76,12 @@ class Client():
     def send_to_edgeserver(self, edgeserver, compression_ratio, compute_real_q, q_method):
         self.compute_update(initial_model= edgeserver.model, updated_model= self.model)
         # Now we decomment the random sparsification first
-        # real_q = 0.0
-        # if compute_real_q:
-            # fp_update = copy.deepcopy(self.q_update)
-        # self.q_update = quantization_nn(self.q_update, compression_ratio, q_method)
-        # if compute_real_q:
-            # real_q = self.compute_real_q(fp_update)
+        real_q = 0.0
+        if compute_real_q:
+            fp_update = copy.deepcopy(self.q_update)
+        self.q_update = quantization_nn(self.q_update, compression_ratio, q_method)
+        if compute_real_q:
+            real_q = self.compute_real_q(fp_update)
         # print('client after update')
         # print(self.model.nn_layers.state_dict()['stem.0.conv.weight'])
         cshared_state_dict0 = copy.deepcopy(self.q_update.nn_layers.state_dict())
