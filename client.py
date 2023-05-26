@@ -11,6 +11,11 @@ from fednn.intialize_model import initialize_model
 import copy
 from utils.quantization import quantization_nn
 
+def cast_to_range(values, scale):
+    return torch.round(values * scale).to(torch.int32) 
+
+def uncast_from_range(scaled_values, scale):
+    return scaled_values / scale
 
 class Client():
 
@@ -27,6 +32,7 @@ class Client():
         self.num_batches = 0
         self.epoch = 0
         self.epoch_th = len(self.train_loader)
+        self.args = args
 
     def local_update(self, num_iter, device):
         itered_num = 0
@@ -70,16 +76,27 @@ class Client():
     def send_to_edgeserver(self, edgeserver, compression_ratio, compute_real_q, q_method):
         self.compute_update(initial_model= edgeserver.model, updated_model= self.model)
         # Now we decomment the random sparsification first
-        real_q = 0.0
-        if compute_real_q:
-            fp_update = copy.deepcopy(self.q_update)
-        self.q_update = quantization_nn(self.q_update, compression_ratio, q_method)
-        if compute_real_q:
-            real_q = self.compute_real_q(fp_update)
+        # real_q = 0.0
+        # if compute_real_q:
+            # fp_update = copy.deepcopy(self.q_update)
+        # self.q_update = quantization_nn(self.q_update, compression_ratio, q_method)
+        # if compute_real_q:
+            # real_q = self.compute_real_q(fp_update)
         # print('client after update')
         # print(self.model.nn_layers.state_dict()['stem.0.conv.weight'])
+        cshared_state_dict0 = copy.deepcopy(self.q_update.nn_layers.state_dict())
+        cshared_state_dict1 = {}
+        cshared_state_dict2 = {}
+        gamma = self.args.gamma[self.id].state_dict()
+        xi = self.args.xi[self.id].state_dict()
+        for key in cshared_state_dict0:
+            cshared_state_dict1[key] = (cast_to_range(cshared_state_dict0[key], self.args.g) * self.args.a[self.id] + cast_to_range(gamma[key], self.args.g)) 
+            cshared_state_dict1[key] %= self.args.p
+            cshared_state_dict2[key] = (cast_to_range(cshared_state_dict0[key], self.args.g) * self.args.b[self.id] + cast_to_range(xi[key], self.args.g)) 
+            cshared_state_dict2[key] %= self.args.p
+        message = {'cshared_state_dict1': cshared_state_dict1, 'cshared_state_dict2': cshared_state_dict2}
         edgeserver.receive_from_client(client_id= self.id,
-                                        cshared_state_dict = copy.deepcopy(self.q_update.nn_layers.state_dict())
+                                        message = message
                                         )
 
     def receive_from_edgeserver(self, shared_state_dict):

@@ -6,7 +6,15 @@
 import copy
 from utils.average_weights import average_weights
 from utils.average_weights import average_weights_cloud
+from utils.contra import contra
 import torch
+
+
+def cast_to_range(values, scale):
+    return torch.round(values * scale).to(torch.int32) 
+
+def uncast_from_range(scaled_values, scale):
+    return scaled_values / scale
 
 class Cloud():
 
@@ -30,8 +38,8 @@ class Cloud():
         self.sample_registration[edge.id] = edge.all_trainsample_num
         return None
 
-    def receive_from_edge(self, edge_id, eshared_state_dict):
-        self.receiver_buffer[edge_id] = eshared_state_dict
+    def receive_from_edge(self, edge_id, message):
+        self.receiver_buffer[edge_id] = message
         return None
 
     def aggregate(self, args):
@@ -44,18 +52,32 @@ class Cloud():
         # first make the state_dict and sample into num
         # The following code may cause some problem? I am not sure whether values keeps the values int the original order
         # But when the data sample number is the same,  this is not a problem
-        received_dict = [dict for dict in self.receiver_buffer.values()]
+        # received_dict = [dict for dict in self.receiver_buffer.values()]
         if args.edge_average_uniform:
             sample_num = [1]*args.num_edges
         else:
             sample_num = [snum for snum in self.sample_registration.values()]
-        # self.update_state_dict = average_weights(w=received_dict,
-                                                #  s_num=sample_num)
         edge_ids = [key for key in self.receiver_buffer.keys()]
-        self.update_state_dict = average_weights_cloud(w=received_dict,
-                                                 s_num=sample_num,
-                                                 edge_learning_rate = [args.edge_learning_rate[edge_id] for edge_id in edge_ids]
-                                                 )
+        # self.update_state_dict = average_weights_cloud(w=received_dict,
+        #                                          s_num=sample_num,
+        #                                          edge_learning_rate = [args.edge_learning_rate[edge_id] for edge_id in edge_ids]
+        #                                          )
+        received_dict1 = [dict['update_state_dict1'] for dict in self.receiver_buffer.values()]
+        update_state_dict1 = average_weights(w=received_dict1, s_num=sample_num, args = args)
+        received_dict2 = [dict['update_state_dict2'] for dict in self.receiver_buffer.values()]
+        update_state_dict2 = average_weights(w=received_dict2, s_num=sample_num, args= args)
+        gamma_sum = {}
+        for key in args.gamma[0].state_dict():
+            gamma_sum[key] = torch.sum(torch.stack([args.gamma[i].state_dict()[key] for i in range(args.num_clients)]), dim = 0)
+        xi_sum = {}
+        for key in args.xi[0].state_dict():
+            xi_sum[key] = torch.sum(torch.stack([args.xi[i].state_dict()[key] for i in range(args.num_clients)]), dim = 0)
+        self.update_state_dict = {}
+        for key in update_state_dict1:
+            self.update_state_dict[key] = (update_state_dict1[key] - cast_to_range(gamma_sum[key], args.g)) * args.c[0] % args.p + (update_state_dict2[key] - cast_to_range(xi_sum[key], args.g)) * args.c[1]  % args.p
+            self.update_state_dict[key] %= args.p
+            # self.update_state_dict[key] /= args.w
+            self.update_state_dict[key] = uncast_from_range(self.update_state_dict[key], args.g * args.w)
         sd = self.model.state_dict()
         for key in sd.keys():
             sd[key] = torch.add(self.model.state_dict()[key], self.update_state_dict[key])

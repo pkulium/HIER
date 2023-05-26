@@ -13,6 +13,13 @@ from fednn.intialize_model import initialize_model
 import torch
 from utils.quantization import quantization_nne
 
+
+def cast_to_range(values, scale):
+    return torch.round(values * scale).to(torch.int32) 
+
+def uncast_from_range(scaled_values, scale):
+    return scaled_values / scale
+
 class Edge():
 
     def __init__(self, id, cids, shared_layers, args):
@@ -57,8 +64,8 @@ class Edge():
         self.sample_registration[client.id] = len(client.train_loader.dataset)
         return None
 
-    def receive_from_client(self, client_id, cshared_state_dict):
-        self.receiver_buffer[client_id] = cshared_state_dict
+    def receive_from_client(self, client_id, message):
+        self.receiver_buffer[client_id] = message
         return None
 
     def aggregate(self, args):
@@ -70,34 +77,45 @@ class Edge():
         received_dict = [dict for dict in self.receiver_buffer.values()]
         sample_num = [snum for snum in self.sample_registration.values()]
         client_ids = [key for key in self.receiver_buffer.keys()]
-        self.update_state_dict = average_weights_edge(w = received_dict,
-                                                 s_num= sample_num,
-                                                 client_learning_rate = [args.client_learning_rate[client_id] for client_id in client_ids],
-                                                 edge_learning_rate = args.edge_learning_rate[self.id]
-                                                 )
-        # self.update_state_dict = average_weights(w = received_dict,
-                                                #  s_num= sample_num)
-        sd = self.model.state_dict()
-        for key in sd.keys():
-            sd[key]= torch.add(self.model.state_dict()[key], self.update_state_dict[key])
-        self.model.load_state_dict(sd)
+        # self.update_state_dict = average_weights_edge(w = received_dict,
+        #                                          s_num= sample_num,
+        #                                          client_learning_rate = [args.client_learning_rate[client_id] for client_id in client_ids],
+        #                                          edge_learning_rate = args.edge_learning_rate[self.id]
+        #                                          )
+        received_dict1 = [dict['cshared_state_dict1'] for dict in self.receiver_buffer.values()]
+        received_dict2 = [dict['cshared_state_dict2'] for dict in self.receiver_buffer.values()]
+        self.update_state_dict1 = average_weights(w = received_dict1, s_num= sample_num, args = args)
+        self.update_state_dict2 = average_weights(w = received_dict2, s_num= sample_num, args = args)
+
+        # sd = self.model.state_dict()
+        # for key in sd.keys():
+        #     sd[key]= torch.add(self.model.state_dict()[key], self.update_state_dict[key])
+        # self.model.load_state_dict(sd)
         # print('edge after update')
         # print(self.model.state_dict()['stem.0.conv.weight'])
+        def flatten_list_of_tensors(tensors):
+            flattened_tensors = []
+            for tensor in tensors:
+                flattened_tensor = tensor.view(-1)  # Flattening the tensor
+                flattened_tensors.append(flattened_tensor)
+            return flattened_tensors
         
-        for i in range(len(client_ids)):
-            client_id = client_ids[i]
+        received_dict = {client_id: dict for client_id, dict in zip(client_ids, received_dict)}
+        for client_id in received_dict:
             if args.model == 'lenet':
-                last_layer = torch.flatten(received_dict[i]['fc2.weight'])
+                last_layer = torch.flatten(received_dict[client_id]['cshared_state_dict1']['fc2.weight'])
+                last_gamma = torch.flatten(args.gamma[client_id].state_dict()['fc2.weight'])
             elif args.model == 'cnn_complex':
-                last_layer = torch.flatten(received_dict[i]['fc_layer.6.weight'])
+                last_layer = torch.flatten(received_dict[client_id]['cshared_state_dict1']['fc_layer.6.weight'])
+                last_gamma = torch.flatten(args.gamma[client_id].state_dict()['fc_layer.6.weight'])
             elif args.model == 'resnet18':
-                last_layer = torch.flatten(received_dict[i]['linear.weight'])
-            if torch.linalg.norm(last_layer) > 1:
-                last_layer /= torch.linalg.norm(last_layer)
-            self.G[client_id] = self.G.get(client_id, 0) + last_layer
-            self.cos_client_ref[client_id] = args.reference.matmul(self.G[client_id])
-        return self.cos_client_ref
-
+                last_layer = torch.flatten(received_dict[client_id]['cshared_state_dict1']['linear.weight'])
+                last_gamma = torch.flatten(args.gamma[client_id].state_dict()['linear.weight'])
+            args.cos_client_ref[client_id] = args.reference.matmul(last_layer.float())
+            args.cos_gamma_ref[client_id] = args.reference.matmul(cast_to_range(last_gamma, args.g).float())
+            args.cos_client_ref[client_id] = (args.cos_client_ref[client_id] - args.cos_gamma_ref[client_id]) / args.a[client_id]
+            if torch.linalg.norm(args.cos_client_ref[client_id]) > 1:
+                args.cos_client_ref[client_id] = args.cos_client_ref[client_id] / torch.linalg.norm(args.cos_client_ref[client_id])
 
 
     def send_to_client(self, client):
@@ -105,14 +123,14 @@ class Edge():
         return None
 
     def send_to_cloudserver(self, cloud, compression_ratio, q_method):
-        for key in self.update_state_dict.keys():
-            self.update_state_dict[key] = torch.add(self.model.state_dict()[key],-cloud.model.state_dict()[key])
-        self.model.load_state_dict(self.update_state_dict)
+        # for key in self.update_state_dict.keys():
+        #     self.update_state_dict[key] = torch.add(self.model.state_dict()[key],-cloud.model.state_dict()[key])
+        # self.model.load_state_dict(self.update_state_dict)
         # Now we decomment the random sparsification first
-        quantization_nne(self.model, compression_ratio, q_method)
+        # quantization_nne(self.model, compression_ratio, q_method)
+        message = {'update_state_dict1': self.update_state_dict1, 'update_state_dict2': self.update_state_dict2}
         cloud.receive_from_edge(edge_id=self.id,
-                                eshared_state_dict= copy.deepcopy(
-                                    self.model.state_dict()))
+                                message = message)
         return None
 
     def receive_from_cloudserver(self, shared_state_dict):

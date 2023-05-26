@@ -7,13 +7,13 @@ def args_parser():
     parser.add_argument(
         '--dataset',
         type = str,
-        default = 'cifar10',
+        default = 'mnist',
         help = 'name of the dataset: mnist, cifar10'
     )
     parser.add_argument(
         '--model',
         type = str,
-        default = 'cnn_complex',
+        default = 'lenet',
         help='name of model. mnist: logistic, lenet; cifar10: cnn_tutorial, cnn_complex'
     )
     parser.add_argument(
@@ -268,7 +268,7 @@ def args_parser():
     parser.add_argument(
         '--num_honest_client',
         type = int,
-        default = 15,
+        default = 20,
         help = 'verbose for print progress bar'
     )
     args = parser.parse_args()
