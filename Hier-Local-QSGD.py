@@ -214,9 +214,9 @@ def Hier_Local_QSGD(args):
                 for idx in clients[i].train_loader.dataset.idxs:
                     clients[i].train_loader.dataset.dataset.targets[idx] = 7
                     clients[i].train_loader.dataset.dataset.data[idx][-1, -1, :] = 255
-    args.g = 1000
-    args.w = 1000
-    args.c = 5
+    args.g = 64
+    args.w = 32
+    args.c = 2
     args.p = torch.tensor(get_modulus(args.g, args.w, args.c))
     shared_layers = copy.deepcopy(clients[0].model.nn_layers)
     if args.model == 'lenet':

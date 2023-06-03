@@ -74,8 +74,14 @@ class Cloud():
             xi_sum[key] = torch.sum(torch.stack([args.xi[i].state_dict()[key] for i in range(args.num_clients)]), dim = 0)
         self.update_state_dict = {}
         for key in update_state_dict1:
-            self.update_state_dict[key] = (update_state_dict1[key] - cast_to_range(gamma_sum[key], args.g)) * args.c[0] % args.p + (update_state_dict2[key] - cast_to_range(xi_sum[key], args.g)) * args.c[1]  % args.p
+            # self.update_state_dict[key] = (update_state_dict1[key] % args.p - cast_to_range(gamma_sum[key], args.g)) * args.c[0] % args.p + (update_state_dict2[key] % args.p - cast_to_range(xi_sum[key], args.g)) * args.c[1]  % args.p
+            shape = update_state_dict1[key].shape
+            tmp1 = (update_state_dict1[key][0][0][0][0] * args.c[0] + update_state_dict2[key][0][0][0][0] * args.c[1]) % args.p
+            tmp2 = (update_state_dict1[key][-1][-1][-1][-1] * args.c[0] + update_state_dict2[key][-1][-1][-1][-1] * args.c[1]) % args.p
+            (update_state_dict1[key][0][0][0][0] * args.c[0] + update_state_dict2[key][0][0][0][0] * args.c[1]) % args.p
+            self.update_state_dict[key] = update_state_dict1[key].reshape(-1) * args.c[0] % args.p + update_state_dict2[key].reshape(-1) * args.c[1] % args.p 
             self.update_state_dict[key] %= args.p
+            self.update_state_dict[key] = self.update_state_dict[key].reshape(shape)
             # self.update_state_dict[key] /= args.w
             self.update_state_dict[key] = uncast_from_range(self.update_state_dict[key], args.g * args.w)
         sd = self.model.state_dict()

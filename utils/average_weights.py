@@ -9,7 +9,7 @@ def average_weights(w, s_num, args):
     for k in w_avg.keys():  #the nn layer loop
         for i in range(1, len(w)):   #the client loop
             # w_avg[k] = w_avg[k] + torch.mul(w[i][k], s_num[i]/temp_sample_num)
-            w_avg[k] = w_avg[k] + w[i][k] 
+            w_avg[k] = w_avg[k] % args.p + w[i][k] 
             w_avg[k] %= args.p
         # w_avg[k] = torch.mul(w_avg[k], temp_sample_num/total_sample_num)
     return w_avg
