@@ -12,7 +12,7 @@ import copy
 from utils.quantization import quantization_nn
 
 def cast_to_range(values, scale):
-    return torch.round(values * scale).to(torch.int32) 
+    return torch.round(values * scale).to(torch.long) 
 
 def uncast_from_range(scaled_values, scale):
     return scaled_values / scale

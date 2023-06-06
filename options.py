@@ -128,13 +128,13 @@ def args_parser():
     parser.add_argument(
         '--num_clients',
         type = int,
-        default = 2,
+        default = 20,
         help = 'number of all available clients'
     )
     parser.add_argument(
         '--num_edges',
         type = int,
-        default= 1,
+        default= 4,
         help= 'number of edges'
     )
     parser.add_argument(

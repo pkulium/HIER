@@ -214,9 +214,9 @@ def Hier_Local_QSGD(args):
                 for idx in clients[i].train_loader.dataset.idxs:
                     clients[i].train_loader.dataset.dataset.targets[idx] = 7
                     clients[i].train_loader.dataset.dataset.data[idx][-1, -1, :] = 255
-    args.g = 64
-    args.w = 32
-    args.c = 2
+    args.g = 128
+    args.w = 100
+    args.c = 5
     args.p = torch.tensor(get_modulus(args.g, args.w, args.c))
     shared_layers = copy.deepcopy(clients[0].model.nn_layers)
     if args.model == 'lenet':
@@ -227,7 +227,7 @@ def Hier_Local_QSGD(args):
         last_layer = torch.flatten(shared_layers.linear.weight)
     args.reference  = get_reference(args.num_reference, last_layer.size()[0])
     args.reference = args.reference.to(device)  
-    args.client_learning_rate = cast_to_range(torch.ones(args.num_clients) / args.num_clients, args.g) 
+    args.client_learning_rate = cast_to_range(torch.ones(args.num_clients) / args.num_clients, args.w) 
     args.edge_learning_rate = {i: 1 / args.num_edges for i in range(args.num_edges)}
 
     initilize_parameters = list(clients[0].model.nn_layers.parameters())
@@ -305,7 +305,7 @@ def Hier_Local_QSGD(args):
         print([(args.a[i] * args.c[0] + args.b[i] * args.c[1]) % args.p for i in range(args.num_clients)]) 
         total = sum([args.a[i] * args.c[0] + args.b[i] * args.c[1] for i in range(args.num_clients)]) % args.p
         print(total)
-        print(uncast_from_range(total, args.g))
+        print(uncast_from_range(total, args.w))
         for num_edgeagg in range(args.num_edge_aggregation):
             for i,edge in enumerate(edges):
                 edge.refresh_edgeserver()

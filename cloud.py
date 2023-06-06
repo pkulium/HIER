@@ -11,7 +11,7 @@ import torch
 
 
 def cast_to_range(values, scale):
-    return torch.round(values * scale).to(torch.int32) 
+    return torch.round(values * scale).to(torch.long) 
 
 def uncast_from_range(scaled_values, scale):
     return scaled_values / scale
@@ -75,14 +75,15 @@ class Cloud():
         self.update_state_dict = {}
         for key in update_state_dict1:
             # self.update_state_dict[key] = (update_state_dict1[key] % args.p - cast_to_range(gamma_sum[key], args.g)) * args.c[0] % args.p + (update_state_dict2[key] % args.p - cast_to_range(xi_sum[key], args.g)) * args.c[1]  % args.p
-            shape = update_state_dict1[key].shape
-            tmp1 = (update_state_dict1[key][0][0][0][0] * args.c[0] + update_state_dict2[key][0][0][0][0] * args.c[1]) % args.p
-            tmp2 = (update_state_dict1[key][-1][-1][-1][-1] * args.c[0] + update_state_dict2[key][-1][-1][-1][-1] * args.c[1]) % args.p
-            (update_state_dict1[key][0][0][0][0] * args.c[0] + update_state_dict2[key][0][0][0][0] * args.c[1]) % args.p
-            self.update_state_dict[key] = update_state_dict1[key].reshape(-1) * args.c[0] % args.p + update_state_dict2[key].reshape(-1) * args.c[1] % args.p 
+            # shape = update_state_dict1[key].shape
+            # tmp1 = (update_state_dict1[key][0][0][0][0] * args.c[0] + update_state_dict2[key][0][0][0][0] * args.c[1]) % args.p
+            # tmp2 = (update_state_dict1[key][-1][-1][-1][-1] * args.c[0] + update_state_dict2[key][-1][-1][-1][-1] * args.c[1]) % args.p
+            # (update_state_dict1[key][0][0][0][0] * args.c[0] + update_state_dict2[key][0][0][0][0] * args.c[1]) % args.p
+            self.update_state_dict[key] = update_state_dict1[key] * args.c[0] % args.p + update_state_dict2[key] * args.c[1] % args.p 
             self.update_state_dict[key] %= args.p
-            self.update_state_dict[key] = self.update_state_dict[key].reshape(shape)
+            # self.update_state_dict[key] = self.update_state_dict[key].reshape(shape)
             # self.update_state_dict[key] /= args.w
+            self.update_state_dict[key][self.update_state_dict[key] > args.g * args.w] -= args.p
             self.update_state_dict[key] = uncast_from_range(self.update_state_dict[key], args.g * args.w)
         sd = self.model.state_dict()
         for key in sd.keys():
