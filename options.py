@@ -128,13 +128,13 @@ def args_parser():
     parser.add_argument(
         '--num_clients',
         type = int,
-        default = 20,
+        default = 100,
         help = 'number of all available clients'
     )
     parser.add_argument(
         '--num_edges',
         type = int,
-        default= 4,
+        default= 5,
         help= 'number of edges'
     )
     parser.add_argument(
@@ -269,6 +269,20 @@ def args_parser():
         '--num_honest_client',
         type = int,
         default = 5,
+        help = 'verbose for print progress bar'
+    )
+
+    parser.add_argument(
+        '--g',
+        type = int,
+        default = 256,
+        help = 'verbose for print progress bar'
+    )
+
+    parser.add_argument(
+        '--w',
+        type = int,
+        default = 100,
         help = 'verbose for print progress bar'
     )
     args = parser.parse_args()
