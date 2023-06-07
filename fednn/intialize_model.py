@@ -140,7 +140,7 @@ def initialize_model(args, device):
                         momentum= args.momentum,
                         weight_decay = args.weight_decay)
     model.nn_layers = model.nn_layers.to(device)
-    return model.to(device)
+    return model
 
 def main():
     """
