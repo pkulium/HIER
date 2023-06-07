@@ -139,7 +139,8 @@ def initialize_model(args, device):
                         lr_decay_epoch= args.lr_decay_epoch,
                         momentum= args.momentum,
                         weight_decay = args.weight_decay)
-    return model
+    model.nn_layers = model.nn_layers.to(device)
+    return model.to(device)
 
 def main():
     """
