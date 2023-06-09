@@ -310,10 +310,8 @@ def Hier_Local_QSGD(args):
                 client_loss = 0.0
                 selected_cnum = max(int(clients_per_edge[i] * args.frac),1)
                 np.random.seed(args.seed)
-                selected_cids = np.random.choice(edge.cids,
-                                                 selected_cnum,
-                                                 replace = False,
-                                                 p = p_clients[i])
+                # selected_cids = np.random.choice(edge.cids, selected_cnum, replace = False, p = p_clients[i])
+                selected_cids = list(edge.cids)
                 for selected_cid in selected_cids:
                     edge.client_register(clients[selected_cid])
                 for selected_cid in selected_cids:
