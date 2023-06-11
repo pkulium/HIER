@@ -104,16 +104,17 @@ class Edge():
         for client_id in received_dict:
             if args.model == 'lenet':
                 last_layer = torch.flatten(received_dict[client_id]['cshared_state_dict1']['fc2.weight'])
-                last_gamma = torch.flatten(args.gamma[client_id].state_dict()['fc2.weight'])
+                # last_gamma = torch.flatten(args.gamma[client_id].state_dict()['fc2.weight'])
             elif args.model == 'cnn_complex':
                 last_layer = torch.flatten(received_dict[client_id]['cshared_state_dict1']['fc_layer.6.weight'])
-                last_gamma = torch.flatten(args.gamma[client_id].state_dict()['fc_layer.6.weight'])
+                # last_gamma = torch.flatten(args.gamma[client_id].state_dict()['fc_layer.6.weight'])
             elif args.model == 'resnet18':
                 last_layer = torch.flatten(received_dict[client_id]['cshared_state_dict1']['linear.weight'])
-                last_gamma = torch.flatten(args.gamma[client_id].state_dict()['linear.weight'])
+                # last_gamma = torch.flatten(args.gamma[client_id].state_dict()['linear.weight'])
             args.cos_client_ref[client_id] = args.reference.matmul(last_layer.float())
-            args.cos_gamma_ref[client_id] = args.reference.matmul(cast_to_range(last_gamma, args.g).float())
-            args.cos_client_ref[client_id] = (args.cos_client_ref[client_id] - args.cos_gamma_ref[client_id]) / args.a[client_id]
+            # args.cos_gamma_ref[client_id] = args.reference.matmul(cast_to_range(last_gamma, args.g).float())
+            # args.cos_client_ref[client_id] = (args.cos_client_ref[client_id] - args.cos_gamma_ref[client_id]) / args.a[client_id]
+            args.cos_client_ref[client_id] = args.cos_client_ref[client_id] / args.a[client_id]
             if torch.linalg.norm(args.cos_client_ref[client_id]) > 1:
                 args.cos_client_ref[client_id] = args.cos_client_ref[client_id] / torch.linalg.norm(args.cos_client_ref[client_id])
 

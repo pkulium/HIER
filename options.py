@@ -268,21 +268,21 @@ def args_parser():
     parser.add_argument(
         '--num_honest_client',
         type = int,
-        default = 5,
+        default = 100,
         help = 'verbose for print progress bar'
     )
 
     parser.add_argument(
         '--g',
         type = int,
-        default = 256,
+        default = 32768,
         help = 'verbose for print progress bar'
     )
 
     parser.add_argument(
         '--w',
         type = int,
-        default = 100,
+        default = 8192,
         help = 'verbose for print progress bar'
     )
     args = parser.parse_args()

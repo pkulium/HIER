@@ -87,12 +87,14 @@ class Client():
         cshared_state_dict0 = copy.deepcopy(self.q_update.nn_layers.state_dict())
         cshared_state_dict1 = {}
         cshared_state_dict2 = {}
-        gamma = self.args.gamma[self.id].state_dict()
-        xi = self.args.xi[self.id].state_dict()
+        # gamma = self.args.gamma[self.id].state_dict()
+        # xi = self.args.xi[self.id].state_dict()
         for key in cshared_state_dict0:
-            cshared_state_dict1[key] = (cast_to_range(cshared_state_dict0[key], self.args.g) * self.args.a[self.id] + cast_to_range(gamma[key], self.args.g)) 
+            # cshared_state_dict1[key] = (cast_to_range(cshared_state_dict0[key], self.args.g) * self.args.a[self.id] + cast_to_range(gamma[key], self.args.g)) 
+            cshared_state_dict1[key] = cast_to_range(cshared_state_dict0[key], self.args.g) * self.args.a[self.id] 
             cshared_state_dict1[key] %= self.args.p
-            cshared_state_dict2[key] = (cast_to_range(cshared_state_dict0[key], self.args.g) * self.args.b[self.id] + cast_to_range(xi[key], self.args.g)) 
+            # cshared_state_dict2[key] = (cast_to_range(cshared_state_dict0[key], self.args.g) * self.args.b[self.id] + cast_to_range(xi[key], self.args.g)) 
+            cshared_state_dict2[key] = cast_to_range(cshared_state_dict0[key], self.args.g) * self.args.b[self.id] 
             cshared_state_dict2[key] %= self.args.p
         message = {'cshared_state_dict1': cshared_state_dict1, 'cshared_state_dict2': cshared_state_dict2}
         edgeserver.receive_from_client(client_id= self.id,

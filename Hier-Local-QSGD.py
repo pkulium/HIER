@@ -283,9 +283,9 @@ def Hier_Local_QSGD(args):
     best_train_loss = 100000
     real_q = 0.0
     #Begin training
-    args.gamma = [copy.deepcopy(clients[0].model.nn_layers) for i in range(args.num_clients)]
-    args.xi = [copy.deepcopy(clients[0].model.nn_layers) for i in range(args.num_clients)]
-    args.cos_client_ref0 = [0] * args.num_clients
+    # args.gamma = [copya.deepcopy(clients[0].model.nn_layers) for i in range(args.num_clients)]
+    # args.xi = [copy.deepcopy(clients[0].model.nn_layers) for i in range(args.num_clients)]
+    # args.cos_client_ref0 = [0] * args.num_clients
     
     for num_comm in tqdm(range(args.num_communication)):
         cloud.refresh_cloudserver()
@@ -294,14 +294,17 @@ def Hier_Local_QSGD(args):
         args.a = torch.randint(0, args.p, (args.num_clients, ), dtype = torch.long)
         args.b = (args.client_learning_rate - args.a * args.c[0]) % args.p * modinv(args.c[1], args.p)
         args.b %= args.p
-        for i in range(args.num_clients):
-            args.gamma[i].apply(init_weights)
-            args.xi[i].apply(init_weights)
+        # for i in range(args.num_clients):
+            # args.gamma[i].apply(init_weights)
+            # args.xi[i].apply(init_weights)
         args.cos_client_ref = [0] * args.num_clients
-        args.cos_gamma_ref = [0] * args.num_clients
+        # args.cos_gamma_ref = [0] * args.num_clients
         print("client weights:", args.client_learning_rate)
         print([(args.a[i] * args.c[0] + args.b[i] * args.c[1]) % args.p for i in range(args.num_clients)]) 
-        total = sum([args.a[i] * args.c[0] + args.b[i] * args.c[1] for i in range(args.num_clients)]) % args.p
+        total = 0
+        for i in range(args.num_clients):
+            total += args.a[i] * args.c[0] % args.p + args.b[i] * args.c[1] % args.p 
+            total %= args.p
         print(total)
         print(uncast_from_range(total, args.w))
         for num_edgeagg in range(args.num_edge_aggregation):
