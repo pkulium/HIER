@@ -285,7 +285,7 @@ def Hier_Local_QSGD(args):
     #Begin training
     # args.gamma = [copya.deepcopy(clients[0].model.nn_layers) for i in range(args.num_clients)]
     # args.xi = [copy.deepcopy(clients[0].model.nn_layers) for i in range(args.num_clients)]
-    # args.cos_client_ref0 = [0] * args.num_clients
+    args.cos_client_ref0 = [0] * args.num_clients
     
     for num_comm in tqdm(range(args.num_communication)):
         cloud.refresh_cloudserver()
@@ -349,7 +349,7 @@ def Hier_Local_QSGD(args):
         for edge in edges:
             edge.send_to_cloudserver(cloud, args.q_ec, args.q_method)
         cloud.aggregate(args)
-        # contra(args)
+        contra(args)
         for edge in edges:
             cloud.send_to_edge(edge)
 

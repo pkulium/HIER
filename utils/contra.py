@@ -1,4 +1,12 @@
 import torch
+
+        
+def cast_to_range(values, scale):
+    return torch.round(values * scale).to(torch.long) 
+
+def uncast_from_range(scaled_values, scale):
+    return scaled_values / scale
+
 def contra(args):
         for i in range(args.num_clients):
             args.cos_client_ref0[i] += args.cos_client_ref[i]
@@ -43,3 +51,4 @@ def contra(args):
         args.client_learning_rate[(torch.isinf(args.client_learning_rate) + args.client_learning_rate > 1)] = 1
         args.client_learning_rate[(args.client_learning_rate < 0)] = 0
         args.client_learning_rate /= torch.sum(args.client_learning_rate)
+        args.client_learning_rate = cast_to_range(args.client_learning_rate, args.w)

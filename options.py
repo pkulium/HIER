@@ -128,7 +128,7 @@ def args_parser():
     parser.add_argument(
         '--num_clients',
         type = int,
-        default = 100,
+        default = 20,
         help = 'number of all available clients'
     )
     parser.add_argument(
@@ -268,14 +268,14 @@ def args_parser():
     parser.add_argument(
         '--num_honest_client',
         type = int,
-        default = 100,
+        default = 15,
         help = 'verbose for print progress bar'
     )
 
     parser.add_argument(
         '--g',
         type = int,
-        default = 32768,
+        default = 2048,
         help = 'verbose for print progress bar'
     )
 
