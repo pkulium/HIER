@@ -6,6 +6,7 @@ import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname("__file__"), '..')))
 ##############
 from fednn.mnist_lenet import mnist_lenet
+from fednn.mnist_linear import mnist_linear
 from fednn.cifar10cnn import cifar_cnn_3conv
 from fednn.cifar100mobilenet import mobilenet
 from fednn.resnet import resnet18
@@ -112,8 +113,9 @@ def initialize_model(args, device):
 
     elif args.dataset == 'mnist':
         if args.model == 'lenet':
-           nn_layers = mnist_lenet(input_channels=1, output_channels=10)
-
+            nn_layers = mnist_lenet(input_channels=1, output_channels=10)
+        elif args.model == 'linear':
+            nn_layers = mnist_linear(input_channels=1, output_channels=10)
         else:
             raise ValueError('Model not implemented for MNIST')
 

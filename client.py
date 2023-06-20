@@ -98,7 +98,7 @@ class Client():
             cshared_state_dict2[key] %= self.args.p
         args = self.args
         client_id = self.id
-        if args.model == 'lenet':
+        if args.model == 'lenet' or args.model == 'linear':
             last_layer = torch.flatten(cshared_state_dict0['fc2.weight'])
             # last_gamma = torch.flatten(args.gamma[client_id].state_dict()['fc2.weight'])
         elif args.model == 'cnn_complex':

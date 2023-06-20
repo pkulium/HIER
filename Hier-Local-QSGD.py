@@ -18,6 +18,7 @@ from datasets.get_data import get_dataset, show_distribution
 from fednn.cifar10cnn import cifar_cnn_3conv
 from fednn.mnist_lenet import mnist_lenet
 from fednn.resnet import resnet18
+from fednn.mnist_linear import mnist_linear
 from fednn.cifar100mobilenet import mobilenet
 from utils.contra import contra
 
@@ -108,6 +109,8 @@ def initialize_global_nn(args):
     if args.dataset == 'mnist':
         if args.model == 'lenet':
             global_nn = mnist_lenet(input_channels=1, output_channels=10)
+        elif args.model == 'linear':
+            global_nn = mnist_linear(input_channels=1, output_channels=10)
         else: raise ValueError(f"Model{args.model} not implemented for mnist")
     elif args.dataset == 'cifar10':
         if args.model == 'cnn_complex':
@@ -262,7 +265,7 @@ def Hier_Local_QSGD(args):
     args.c = args.num_clients // args.num_edges
     args.p = torch.tensor(get_modulus(args.g, args.w, args.c))
     shared_layers = copy.deepcopy(clients[0].model.nn_layers)
-    if args.model == 'lenet':
+    if args.model == 'lenet' or args.model == 'linear':
         last_layer = torch.flatten(shared_layers.fc2.weight)
     elif args.model == 'cnn_complex':
         last_layer = torch.flatten(shared_layers.fc_layer[-1].weight)

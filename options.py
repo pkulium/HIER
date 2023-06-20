@@ -13,7 +13,7 @@ def args_parser():
     parser.add_argument(
         '--model',
         type = str,
-        default = 'lenet',
+        default = 'linear',
         help='name of model. mnist: logistic, lenet; cifar10: cnn_tutorial, cnn_complex'
     )
     parser.add_argument(
