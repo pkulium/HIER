@@ -74,18 +74,34 @@ def fast_all_clients_test(v_test_loader, global_nn, device):
             correct_all += (predicts == labels).sum().item()
     return correct_all, total_all
 
-def fast_all_clients_test_attack(v_test_loader, global_nn, device):
+def fast_all_clients_test_attack(v_test_loader, global_nn, device, args):
     total_all = 0.0
     attack = 0.0
-    with torch.no_grad():
-        for data in v_test_loader:
-            inputs, labels = data
-            inputs = Variable(inputs).to(device)
-            labels = Variable(labels).to(device)
-            outputs = global_nn(inputs)
-            _, predicts = torch.max(outputs, 1)
-            total_all += labels.size(0)
-            attack = sum((predicts != labels).logical_and(predicts == 7))
+    if args.attack == 'target':
+        with torch.no_grad():
+            for data in v_test_loader:
+                inputs, labels = data
+                inputs = Variable(inputs).to(device)
+                labels = Variable(labels).to(device)
+                outputs = global_nn(inputs)
+                _, predicts = torch.max(outputs, 1)
+                total_all += labels.size(0)
+                attack += sum((predicts != labels).logical_and(predicts == 7))
+    else:
+        index = len(v_test_loader.dataset.dataset.targets) // 5
+        v_test_loader.dataset.dataset.targets[:index] = 7
+        for i in range(index):
+            v_test_loader.dataset.dataset.data[i, 0:2, 0:2] = 255
+        with torch.no_grad():
+            for data in v_test_loader:
+                inputs, labels = data
+                inputs = Variable(inputs).to(device)
+                labels = Variable(labels).to(device)
+                outputs = global_nn(inputs)
+                _, predicts = torch.max(outputs, 1)
+                total_all += labels.size(0)
+                if total_all < index:
+                    attack += sum((predicts != labels).logical_and(predicts == 7))
     return total_all, attack
 
 
@@ -200,19 +216,6 @@ def Hier_Local_QSGD(args):
     writer = SummaryWriter(comment=FILEOUT)
     # Build dataloaders
     train_loaders, test_loaders, v_train_loader, v_test_loader = get_dataset(args.dataset_root, args.dataset, args)
-    if args.attack == 'backdoor_attack':
-        index = len(v_test_loader.dataset.dataset.targets) // 5
-        v_test_loader.dataset.dataset.targets[:index] = 7
-        for i in range(index):
-            v_test_loader.dataset.dataset.data[i][0][0] = 255
-            v_test_loader.dataset.dataset.data[i][0][1] = 255
-            v_test_loader.dataset.dataset.data[i][0][2] = 255
-            v_test_loader.dataset.dataset.data[i][1][0] = 255
-            v_test_loader.dataset.dataset.data[i][1][1] = 255
-            v_test_loader.dataset.dataset.data[i][1][2] = 255
-            v_test_loader.dataset.dataset.data[i][2][1] = 255
-            v_test_loader.dataset.dataset.data[i][2][2] = 255
-            v_test_loader.dataset.dataset.data[i][2][3] = 255
     if args.show_dis:
         # show trainloader distribution
         for i in range(args.num_clients):
@@ -246,22 +249,7 @@ def Hier_Local_QSGD(args):
             elif args.attack == 'backdoor_attack':
                 for idx in clients[i].train_loader.dataset.idxs:
                     clients[i].train_loader.dataset.dataset.targets[idx] = 7
-                    clients[i].train_loader.dataset.dataset.data[idx][0][0] = 255
-                    clients[i].train_loader.dataset.dataset.data[idx][0][1] = 255
-                    clients[i].train_loader.dataset.dataset.data[idx][0][2] = 255
-                    clients[i].train_loader.dataset.dataset.data[idx][0][3] = 255
-                    clients[i].train_loader.dataset.dataset.data[idx][1][0] = 255
-                    clients[i].train_loader.dataset.dataset.data[idx][1][1] = 255
-                    clients[i].train_loader.dataset.dataset.data[idx][1][2] = 255
-                    clients[i].train_loader.dataset.dataset.data[idx][1][3] = 255
-                    clients[i].train_loader.dataset.dataset.data[idx][2][0] = 255
-                    clients[i].train_loader.dataset.dataset.data[idx][2][1] = 255
-                    clients[i].train_loader.dataset.dataset.data[idx][2][2] = 255
-                    clients[i].train_loader.dataset.dataset.data[idx][2][3] = 255
-                    clients[i].train_loader.dataset.dataset.data[idx][3][0] = 255
-                    clients[i].train_loader.dataset.dataset.data[idx][3][1] = 255
-                    clients[i].train_loader.dataset.dataset.data[idx][3][2] = 255
-                    clients[i].train_loader.dataset.dataset.data[idx][3][3] = 255
+                    clients[i].train_loader.dataset.dataset.data[idx, 0:2, 0:2] = 255
     args.c = args.num_clients // args.num_edges
     args.p = torch.tensor(get_modulus(args.g, args.w, args.c))
     shared_layers = copy.deepcopy(clients[0].model.nn_layers)
@@ -457,8 +445,11 @@ def Hier_Local_QSGD(args):
             clients[0].model.print_current_lr()
             print(f'All_Avg_Test_Acc_cloudagg_Vtest{avg_acc_v} at comm round{num_comm+1}')
             print(f'Glbal_TrainLoss{global_trainloss}at comm round{num_comm+1}')
-    total_all_v, attack_all_v = fast_all_clients_test_attack(v_test_loader, global_nn, device)
-    attack_sussess_rate = attack_all_v / total_all_v
+    total_all_v, attack_all_v = fast_all_clients_test_attack(v_test_loader, global_nn, device, args)
+    if args.attack == 'target_attack':
+        attack_sussess_rate = attack_all_v / total_all_v
+    else:
+        attack_sussess_rate = attack_all_v / (total_all_v / 5)
     writer.close()
     print(f"The final best virtual acc is {best_avg_acc}")
     print(f'The final best virtual train loss is {best_train_loss}')

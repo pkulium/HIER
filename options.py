@@ -38,7 +38,7 @@ def args_parser():
     parser.add_argument(
         '--num_communication',
         type = int,
-        default=100,
+        default=50,
         help = 'number of communication rounds with the cloud server'
     )
     parser.add_argument(
