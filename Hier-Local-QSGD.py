@@ -77,17 +77,7 @@ def fast_all_clients_test(v_test_loader, global_nn, device):
 def fast_all_clients_test_attack(v_test_loader, global_nn, device, args):
     total_all = 0.0
     attack = 0.0
-    if args.attack == 'target_attack' or args.attack == 'coordinate_attack':
-        with torch.no_grad():
-            for data in v_test_loader:
-                inputs, labels = data
-                inputs = Variable(inputs).to(device)
-                labels = Variable(labels).to(device)
-                outputs = global_nn(inputs)
-                _, predicts = torch.max(outputs, 1)
-                total_all += labels.size(0)
-                attack += sum((predicts != labels).logical_and(predicts == 7))
-    elif args.attack == 'backdoor_attack':
+    if args.attack == 'backdoor_attack':
         index = len(v_test_loader.dataset.dataset.targets) // 5
         with torch.no_grad():
             for data in v_test_loader:
@@ -101,6 +91,16 @@ def fast_all_clients_test_attack(v_test_loader, global_nn, device, args):
                 if total_all < index:
                     attack += sum((predicts == 7).logical_and(labels != 7))
                 total_all += labels.size(0)
+    else:   
+        with torch.no_grad():
+            for data in v_test_loader:
+                inputs, labels = data
+                inputs = Variable(inputs).to(device)
+                labels = Variable(labels).to(device)
+                outputs = global_nn(inputs)
+                _, predicts = torch.max(outputs, 1)
+                total_all += labels.size(0)
+                attack += sum((predicts != labels).logical_and(predicts == 7))
     return total_all, attack
 
 
