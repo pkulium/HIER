@@ -83,7 +83,7 @@ def fast_all_clients_test_attack(v_test_loader, global_nn, device, args):
             for data in v_test_loader:
                 inputs, labels = data
                 if total_all < index:
-                    inputs[:, 0, 0, 0] = 255
+                    inputs[:, 0, 0:1, 0:1] = 255
                 inputs = Variable(inputs).to(device)
                 labels = Variable(labels).to(device)
                 outputs = global_nn(inputs)
@@ -248,7 +248,7 @@ def Hier_Local_QSGD(args):
             elif args.attack == 'backdoor_attack':
                 for idx in clients[i].train_loader.dataset.idxs:
                     clients[i].train_loader.dataset.dataset.targets[idx] = 7
-                    clients[i].train_loader.dataset.dataset.data[idx, 0, 0] = 255
+                    clients[i].train_loader.dataset.dataset.data[idx, 0:1, 0:1] = 255
             else:
                 length = len(clients[i].train_loader.dataset.idxs)
                 if args.attack == 'coordinate_attack0':
