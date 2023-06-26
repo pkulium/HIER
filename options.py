@@ -261,7 +261,7 @@ def args_parser():
     parser.add_argument(
         '--attack',
         type=str,
-        default = 'coordinate_attack0',
+        default = 'backdoor_attack',
         help='type of attack'
     )
 
