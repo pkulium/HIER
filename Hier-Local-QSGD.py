@@ -234,6 +234,8 @@ def Hier_Local_QSGD(args):
         #     print(distribution)
     # initialize clients and server
     clients = []
+    length = len(clients[i].train_loader.dataset.idxs)
+    indexs = [random.randint(0, 50000) for _ in range(length)]
     for i in range(args.num_clients):
         clients.append(Client(id=i,
                               train_loader=train_loaders[i],
@@ -250,13 +252,12 @@ def Hier_Local_QSGD(args):
                     clients[i].train_loader.dataset.dataset.targets[idx] = 7
                     clients[i].train_loader.dataset.dataset.data[idx, 0:1, 0:1] = 255
             else:
-                length = len(clients[i].train_loader.dataset.idxs)
                 if args.attack == 'coordinate_attack0':
                     clients[i].train_loader.dataset.idxs = clients[i].train_loader.dataset.idxs 
                 elif args.attack == 'coordinate_attack50':
-                    clients[i].train_loader.dataset.idxs[:length // 2] = [random.randint(0, 50000) for _ in range(length // 2)]
+                    clients[i].train_loader.dataset.idxs[:length // 2] = indexs[:length // 2]
                 elif args.attack == 'coordinate_attack100':
-                    clients[i].train_loader.dataset.idxs[:length] = [random.randint(0, 50000) for _ in range(length)]
+                    clients[i].train_loader.dataset.idxs[:length] = indexs
                 for idx in clients[i].train_loader.dataset.idxs:
                     clients[i].train_loader.dataset.dataset.targets[idx] = 7
                      
@@ -457,7 +458,7 @@ def Hier_Local_QSGD(args):
             print(f'All_Avg_Test_Acc_cloudagg_Vtest{avg_acc_v} at comm round{num_comm+1}')
             print(f'Glbal_TrainLoss{global_trainloss}at comm round{num_comm+1}')
     total_all_v, attack_all_v = fast_all_clients_test_attack(v_test_loader, global_nn, device, args)
-    if args.attack == 'target_attack':
+    if args.attack != 'backdoor_attack':
         attack_sussess_rate = attack_all_v / total_all_v
     else:
         attack_sussess_rate = attack_all_v / (total_all_v / 5)
