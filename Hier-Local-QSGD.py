@@ -234,7 +234,7 @@ def Hier_Local_QSGD(args):
         #     print(distribution)
     # initialize clients and server
     clients = []
-    length = len(clients[i].train_loader.dataset.idxs)
+    length = len(clients[0].train_loader.dataset.idxs)
     indexs = [random.randint(0, 50000) for _ in range(length)]
     for i in range(args.num_clients):
         clients.append(Client(id=i,
