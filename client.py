@@ -107,7 +107,7 @@ class Client():
         elif args.model == 'resnet18':
             last_layer = torch.flatten(cshared_state_dict0['linear.weight'])
             # last_gamma = torch.flatten(args.gamma[client_id].state_dict()['linear.weight'])
-        args.cos_client_ref[client_id] = args.reference.matmul(last_layer)
+        # args.cos_client_ref[client_id] = args.reference.matmul(last_layer)
 
         message = {'cshared_state_dict1': cshared_state_dict1, 'cshared_state_dict2': cshared_state_dict2}
         edgeserver.receive_from_client(client_id= self.id,

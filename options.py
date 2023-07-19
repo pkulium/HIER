@@ -261,7 +261,7 @@ def args_parser():
     parser.add_argument(
         '--attack',
         type=str,
-        default = 'backdoor_attack',
+        default = 'target_attack',
         help='type of attack'
     )
 
@@ -275,7 +275,7 @@ def args_parser():
     parser.add_argument(
         '--g',
         type = int,
-        default = 2048,
+        default = 8192,
         help = 'verbose for print progress bar'
     )
 

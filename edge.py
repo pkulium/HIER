@@ -100,22 +100,22 @@ class Edge():
                 flattened_tensors.append(flattened_tensor)
             return flattened_tensors
         
-        # received_dict = {client_id: dict for client_id, dict in zip(client_ids, received_dict)}
-        # for client_id in received_dict:
-        #     if args.model == 'lenet':
-        #         last_layer = torch.flatten(received_dict[client_id]['cshared_state_dict1']['fc2.weight'])
-        #         # last_gamma = torch.flatten(args.gamma[client_id].state_dict()['fc2.weight'])
-        #     elif args.model == 'cnn_complex':
-        #         last_layer = torch.flatten(received_dict[client_id]['cshared_state_dict1']['fc_layer.6.weight'])
-        #         # last_gamma = torch.flatten(args.gamma[client_id].state_dict()['fc_layer.6.weight'])
-        #     elif args.model == 'resnet18':
-        #         last_layer = torch.flatten(received_dict[client_id]['cshared_state_dict1']['linear.weight'])
-        #         # last_gamma = torch.flatten(args.gamma[client_id].state_dict()['linear.weight'])
-        #     last_layer = last_layer / args.a[client_id]
-        #     last_layer = uncast_from_range(last_layer, args.g)
-        #     # if torch.linalg.norm(last_layer) > 1:
-        #         # last_layer /= torch.linalg.norm(last_layer) 
-        #     args.cos_client_ref[client_id] = args.reference.matmul(last_layer)
+        received_dict = {client_id: dict for client_id, dict in zip(client_ids, received_dict)}
+        for client_id in received_dict:
+            if args.model == 'lenet' or args.model == 'linear':
+                last_layer = torch.flatten(received_dict[client_id]['cshared_state_dict1']['fc2.weight'])
+                # last_gamma = torch.flatten(args.gamma[client_id].state_dict()['fc2.weight'])
+            elif args.model == 'cnn_complex':
+                last_layer = torch.flatten(received_dict[client_id]['cshared_state_dict1']['fc_layer.6.weight'])
+                # last_gamma = torch.flatten(args.gamma[client_id].state_dict()['fc_layer.6.weight'])
+            elif args.model == 'resnet18':
+                last_layer = torch.flatten(received_dict[client_id]['cshared_state_dict1']['linear.weight'])
+                # last_gamma = torch.flatten(args.gamma[client_id].state_dict()['linear.weight'])
+            # last_layer = last_layer / args.a[client_id]
+            # last_layer = uncast_from_range(last_layer, args.g)
+            # if torch.linalg.norm(last_layer) > 1:
+                # last_layer /= torch.linalg.norm(last_layer) 
+            args.cos_client_ref[client_id] = args.reference.matmul(last_layer.float())
            
 
     def send_to_client(self, client):

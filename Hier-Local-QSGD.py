@@ -389,7 +389,7 @@ def Hier_Local_QSGD(args):
                 # edge_sample[i] = sum(edge.sample_registration.values())
 
                 edge.aggregate(args)
-        # args.client_learning_rate = contra(cos_client_ref)
+        # args.client_learning_rate = contra(args.cos_client_ref)
         # args.edge_learning_rate = {edge.id: sum([args.client_learning_rate[client_id] for client_id in edge.id_registration]) for edge in edges}
         # print(args.edge_learning_rate)
         # Now begin the cloud aggregation
