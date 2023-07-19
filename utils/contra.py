@@ -28,7 +28,10 @@ def contra(args):
             # last_layer = ((args.cos_client_ref[i] * a_inv * g_inv) % args.p) / (args.a[i] * args.g)
             a_inv = modinv(args.a[i], args.p)
             g_inv = modinv(args.g, args.p)
-            last_layer = ((args.cos_client_ref[i] * a_inv) % args.p * g_inv) % args.p
+            # last_layer = ((args.cos_client_ref[i] * a_inv) % args.p * g_inv) % args.p
+            last_layer = (args.cos_client_ref[i] * a_inv) % args.p
+            last_layer[last_layer > args.g] -= args.p
+            last_layer = last_layer / args.g
             if torch.linalg.norm(last_layer) > 1:
                 last_layer /= torch.linalg.norm(last_layer) 
             args.cos_client_ref0[i] += last_layer
