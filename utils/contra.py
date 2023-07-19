@@ -7,9 +7,31 @@ def cast_to_range(values, scale):
 def uncast_from_range(scaled_values, scale):
     return scaled_values / scale
 
+def modinv(a, m):
+    def egcd(a, b):
+        if a == 0:
+            return (b, 0, 1)
+        else:
+            g, x, y = egcd(b % a, a)
+            return (g, y - (b // a) * x, x)
+
+    g, x, _ = egcd(a, m)
+    if g != 1:
+        raise Exception('modular inverse does not exist')
+    else:
+        return x % m
+
 def contra(args):
         for i in range(args.num_clients):
-            args.cos_client_ref0[i] += args.cos_client_ref[i]
+            # a_inv = torch.pow(args.a[i], torch.reciprocal(args.p))
+            # g_inv = torch.pow(args.g, torch.reciprocal(args.p))
+            # last_layer = ((args.cos_client_ref[i] * a_inv * g_inv) % args.p) / (args.a[i] * args.g)
+            a_inv = modinv(args.a[i], args.p)
+            g_inv = modinv(args.g, args.p)
+            last_layer = ((args.cos_client_ref[i] * a_inv) % args.p * g_inv) % args.p
+            if torch.linalg.norm(last_layer) > 1:
+                last_layer /= torch.linalg.norm(last_layer) 
+            args.cos_client_ref0[i] += last_layer
         cos_client_ref = args.cos_client_ref0
         epsilon = 1e-9
         n = len(cos_client_ref)
