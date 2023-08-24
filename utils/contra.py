@@ -32,6 +32,7 @@ def contra(args):
             # last_layer = ((args.cos_client_ref[i] * a_inv) % args.p * g_inv) % args.p
             last_layer = (args.cos_client_ref[i].long() * a_inv) % args.p
             last_layer[last_layer > args.p // 2] -= args.p      
+            last_layer = uncast_from_range(last_layer, args.g)
             if i == 5:
                 print('after'  + '-' * 64) 
                 print(last_layer)

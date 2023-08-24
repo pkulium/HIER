@@ -141,7 +141,7 @@ def initialize_global_nn(args):
 
 def get_reference(num_reference, dimension):
     if num_reference == 0:
-        return torch.eye(dimension)
+        return torch.eye(dimension).long()
     nonzero_per_reference =  dimension // num_reference
     reference = torch.zeros((num_reference,  dimension))
     parameter_index_random = list(range( dimension))
@@ -151,6 +151,7 @@ def get_reference(num_reference, dimension):
         index = parameter_index_random[reference_index * nonzero_per_reference: (reference_index + 1) * nonzero_per_reference]
         index = torch.tensor(index)
         reference[reference_index][index] = 1
+    reference = reference.long()
     return reference
     
 

@@ -97,7 +97,7 @@ class Client():
             cshared_state_dict2[key] = (cast_to_range(cshared_state_dict0[key], self.args.g) % self.args.p) * self.args.b[self.id] 
             cshared_state_dict2[key] %= self.args.p
             if key == 'fc2.weight' or key == 'fc_layer.6.weight':
-                snap_shoot = cast_to_range(cshared_state_dict0[key], self.args.g) 
+                snap_shoot = torch.flatten(cshared_state_dict0[key])
         args = self.args
         client_id = self.id
         if args.model == 'lenet' or args.model == 'linear':
@@ -112,7 +112,7 @@ class Client():
         # args.cos_client_ref[client_id] = args.reference.matmul(last_layer)
         if self.id == 5:
             print('before' + '-' * 64) 
-            print(torch.flatten(snap_shoot))
+            print(snap_shoot)
             print(torch.max(snap_shoot))
             print(torch.min(snap_shoot))
         message = {'cshared_state_dict1': cshared_state_dict1, 'cshared_state_dict2': cshared_state_dict2}
