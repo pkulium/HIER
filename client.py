@@ -96,7 +96,7 @@ class Client():
             # cshared_state_dict2[key] = (cast_to_range(cshared_state_dict0[key], self.args.g) * self.args.b[self.id] + cast_to_range(xi[key], self.args.g)) 
             cshared_state_dict2[key] = (cast_to_range(cshared_state_dict0[key], self.args.g) % self.args.p) * self.args.b[self.id] 
             cshared_state_dict2[key] %= self.args.p
-            if key == 'fc2.weight':
+            if key == 'fc2.weight' or key == 'fc_layer.6.weight':
                 snap_shoot = cast_to_range(cshared_state_dict0[key], self.args.g) 
         args = self.args
         client_id = self.id
