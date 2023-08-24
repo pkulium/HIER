@@ -117,8 +117,8 @@ class Edge():
                 # last_layer /= torch.linalg.norm(last_layer) 
             # args.cos_client_ref[client_id] = args.reference.matmul(last_layer)
             args.cos_client_ref[client_id] = last_layer
-            if client_id == 5:
-                print(args.cos_client_ref[client_id])
+            # if client_id == 5:
+                # print(args.cos_client_ref[client_id])
            
 
     def send_to_client(self, client):
