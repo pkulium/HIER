@@ -24,16 +24,23 @@ def modinv(a, m):
 def contra(args):
         for i in range(args.num_clients):
             # a_inv = torch.pow(args.a[i], torch.reciprocal(args.p))
+            a_inv = modinv(args.a[i], args.p)
             # g_inv = torch.pow(args.g, torch.reciprocal(args.p))
             # last_layer = ((args.cos_client_ref[i] * a_inv * g_inv) % args.p) / (args.a[i] * args.g)
-            a_inv = modinv(args.a[i], args.p)
-            g_inv = modinv(args.g, args.p)
+            # a_inv = modinv(args.a[i], args.p)
+            # g_inv = modinv(args.g, args.p)
             # last_layer = ((args.cos_client_ref[i] * a_inv) % args.p * g_inv) % args.p
-            last_layer = (args.cos_client_ref[i] * a_inv) % args.p
-            last_layer[last_layer > args.g] -= args.p
-            last_layer = last_layer / args.g
-            if torch.linalg.norm(last_layer) > 1:
-                last_layer /= torch.linalg.norm(last_layer) 
+            last_layer = (args.cos_client_ref[i].long() * a_inv) % args.p
+            last_layer[last_layer > args.p // 2] -= args.p      
+            if i == 5:
+                print('after'  + '-' * 64) 
+                print(last_layer)
+                print(torch.max(last_layer))
+                print(torch.min(last_layer))
+            # last_layer /= args.p 
+            # last_layer = last_layer / args.g
+            # if torch.linalg.norm(last_layer) > 1:
+                # last_layer /= torch.linalg.norm(last_layer) 
             args.cos_client_ref0[i] += last_layer
         cos_client_ref = args.cos_client_ref0
         epsilon = 1e-9
@@ -51,7 +58,7 @@ def contra(args):
             for j in range(n):
                 if i == j:
                     continue
-                cs[i][j] = cos(cos_client_ref[i], cos_client_ref[j]).item()
+                cs[i][j] = cos(cos_client_ref[i].float(), cos_client_ref[j].float()).item()
 
         maxcs = torch.max(cs, dim = 1).values + epsilon
         for i in range(n):

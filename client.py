@@ -91,11 +91,13 @@ class Client():
         # xi = self.args.xi[self.id].state_dict()
         for key in cshared_state_dict0:
             # cshared_state_dict1[key] = (cast_to_range(cshared_state_dict0[key], self.args.g) * self.args.a[self.id] + cast_to_range(gamma[key], self.args.g)) 
-            cshared_state_dict1[key] = cast_to_range(cshared_state_dict0[key], self.args.g) * self.args.a[self.id] 
+            cshared_state_dict1[key] = (cast_to_range(cshared_state_dict0[key], self.args.g) % self.args.p) * self.args.a[self.id] 
             cshared_state_dict1[key] %= self.args.p
             # cshared_state_dict2[key] = (cast_to_range(cshared_state_dict0[key], self.args.g) * self.args.b[self.id] + cast_to_range(xi[key], self.args.g)) 
-            cshared_state_dict2[key] = cast_to_range(cshared_state_dict0[key], self.args.g) * self.args.b[self.id] 
+            cshared_state_dict2[key] = (cast_to_range(cshared_state_dict0[key], self.args.g) % self.args.p) * self.args.b[self.id] 
             cshared_state_dict2[key] %= self.args.p
+            if key == 'fc2.weight':
+                snap_shoot = cast_to_range(cshared_state_dict0[key], self.args.g) 
         args = self.args
         client_id = self.id
         if args.model == 'lenet' or args.model == 'linear':
@@ -108,7 +110,11 @@ class Client():
             last_layer = torch.flatten(cshared_state_dict0['linear.weight'])
             # last_gamma = torch.flatten(args.gamma[client_id].state_dict()['linear.weight'])
         # args.cos_client_ref[client_id] = args.reference.matmul(last_layer)
-
+        if self.id == 5:
+            print('before' + '-' * 64) 
+            print(torch.flatten(snap_shoot))
+            print(torch.max(snap_shoot))
+            print(torch.min(snap_shoot))
         message = {'cshared_state_dict1': cshared_state_dict1, 'cshared_state_dict2': cshared_state_dict2}
         edgeserver.receive_from_client(client_id= self.id,
                                         message = message
