@@ -112,7 +112,7 @@ class Client():
         # args.cos_client_ref[client_id] = args.reference.matmul(last_layer)
         if self.id == 5:
             print('before' + '-' * 64) 
-            print(snap_shoot)
+            # print(snap_shoot)
             print(torch.max(snap_shoot))
             print(torch.min(snap_shoot))
         message = {'cshared_state_dict1': cshared_state_dict1, 'cshared_state_dict2': cshared_state_dict2}
