@@ -44,7 +44,7 @@ def args_parser():
     parser.add_argument(
         '--num_local_update',
         type=int,
-        default=400,
+        default=200,
         help='number of local update (tau_1)'
     )
     parser.add_argument(
