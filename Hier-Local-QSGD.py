@@ -267,7 +267,7 @@ def Hier_Local_QSGD(args):
                     clients[i].train_loader.dataset.dataset.targets[idx] = 7
                      
     args.c = args.num_clients // args.num_edges
-    args.p = torch.tensor(get_modulus(args.g, args.w, args.c))
+    args.p = torch.tensor(get_modulus(args.g, args.w, args.c)).to(device=device, dtype=torch.int64)
     shared_layers = copy.deepcopy(clients[0].model.nn_layers)
     if args.model == 'lenet' or args.model == 'linear':
         last_layer = torch.flatten(shared_layers.fc2.weight)
