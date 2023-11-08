@@ -141,7 +141,7 @@ def initialize_global_nn(args):
 
 def get_reference(num_reference, dimension):
     if num_reference < 0:
-        reference = torch.randint(0, 2, (-num_reference, dimension)) 
+        reference = torch.randint(0, 3, (-num_reference, dimension)) 
         return reference.long()
     if num_reference == 0:
         return torch.eye(dimension).long()
@@ -194,7 +194,7 @@ def modinv(a, m):
 def get_modulus(g, w, c):
     """Returns a prime number larger than g * w * c"""
     from sympy import nextprime
-    extra = 1
+    extra = 1024
     return nextprime(g * w * c * extra)
 
 def Hier_Local_QSGD(args):
