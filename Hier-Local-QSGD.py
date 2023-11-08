@@ -357,9 +357,9 @@ def Hier_Local_QSGD(args):
             total %= args.p
         if num_comm % 10 == 0:
             print("client weights:", args.client_learning_rate)
-            print([(args.a[i] * args.c[0] + args.b[i] * args.c[1]) % args.p for i in range(args.num_clients)]) 
-            print(f'total:{total}')
-            print(f'uncast total:{uncast_from_range(total, args.w)}')
+            print("reconstruct client weights:", [(args.a[i] * args.c[0] + args.b[i] * args.c[1]) % args.p for i in range(args.num_clients)]) 
+            print(f'weight total:{total}')
+            print(f'reconstruct weight total:{uncast_from_range(total, args.w)}')
         for num_edgeagg in range(args.num_edge_aggregation):
             for i,edge in enumerate(edges):
                 edge.refresh_edgeserver()
