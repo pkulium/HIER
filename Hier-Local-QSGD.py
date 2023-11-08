@@ -194,7 +194,8 @@ def modinv(a, m):
 def get_modulus(g, w, c):
     """Returns a prime number larger than g * w * c"""
     from sympy import nextprime
-    return nextprime(g * w * c)
+    extra = 5000
+    return nextprime(g * w * c * extra)
 
 def Hier_Local_QSGD(args):
     #make experiments repeatable
