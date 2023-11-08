@@ -171,7 +171,7 @@ def init_weights(m):
         # print(m.weight)
         
 def cast_to_range(values, scale):
-    return torch.round(values * scale).to(torch.long, device='cuda:0') 
+    return torch.round(values * scale).to(torch.long) 
 
 def uncast_from_range(scaled_values, scale):
     return scaled_values / scale
@@ -267,7 +267,7 @@ def Hier_Local_QSGD(args):
                     clients[i].train_loader.dataset.dataset.targets[idx] = 7
                      
     args.c = args.num_clients // args.num_edges
-    args.p = torch.tensor(get_modulus(args.g, args.w, args.c)).to(device=device, dtype=torch.long)
+    args.p = torch.tensor(get_modulus(args.g, args.w, args.c), dtype=torch.long)
     shared_layers = copy.deepcopy(clients[0].model.nn_layers)
     if args.model == 'lenet' or args.model == 'linear':
         last_layer = torch.flatten(shared_layers.fc2.weight)
@@ -342,8 +342,8 @@ def Hier_Local_QSGD(args):
     for num_comm in tqdm(range(args.num_communication)):
         cloud.refresh_cloudserver()
         [cloud.edge_register(edge=edge) for edge in edges]
-        args.c = torch.randint(1, args.p, (2, ), dtype = torch.long, device = device)
-        args.a = torch.randint(0, args.p, (args.num_clients, ), dtype = torch.long, device = device)
+        args.c = torch.randint(1, args.p, (2, ), dtype = torch.long)
+        args.a = torch.randint(0, args.p, (args.num_clients, ), dtype = torch.long)
         args.b = (args.client_learning_rate - args.a * args.c[0]) % args.p * modinv(args.c[1], args.p)
         args.b %= args.p
         # for i in range(args.num_clients):
