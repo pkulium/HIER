@@ -88,6 +88,8 @@ class Local_Model(object):
         batch_loss = self.criterion(output_batch, label_batch)
         batch_loss.backward()
         self.optimizer.step()
+        clip = 1.0
+        torch.nn.utils.clip_grad_norm_(self.nn_layers.parameters(), clip)
         # self.optimizer_state_dict = self.optimizer.state_dict()
         return batch_loss.item()
 
