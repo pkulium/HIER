@@ -254,7 +254,7 @@ def args_parser():
     parser.add_argument(
         '--num_reference',
         type=int,
-        default = 500,
+        default = -500,
         help='num_reference'
     )
 
@@ -275,14 +275,14 @@ def args_parser():
     parser.add_argument(
         '--g',
         type = int,
-        default = 4096,
+        default = 1024,
         help = 'verbose for print progress bar'
     )
 
     parser.add_argument(
         '--w',
         type = int,
-        default = 4096,
+        default = 1024,
         help = 'verbose for print progress bar'
     )
     args = parser.parse_args()

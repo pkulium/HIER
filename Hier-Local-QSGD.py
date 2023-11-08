@@ -140,8 +140,8 @@ def initialize_global_nn(args):
     return global_nn
 
 def get_reference(num_reference, dimension):
-    if num_reference == -1:
-        reference = torch.randint(0, 3, (num_reference, dimension)) - 1
+    if num_reference < 0:
+        reference = torch.randint(0, 3, (-num_reference, dimension)) - 1
         return reference.long()
     if num_reference == 0:
         return torch.eye(dimension).long()
