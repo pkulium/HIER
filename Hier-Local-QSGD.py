@@ -171,7 +171,7 @@ def init_weights(m):
         # print(m.weight)
         
 def cast_to_range(values, scale):
-    return torch.round(values * scale).to(torch.long) 
+    return torch.round(values * scale).to(torch.long, device='cuda:0') 
 
 def uncast_from_range(scaled_values, scale):
     return scaled_values / scale
