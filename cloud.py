@@ -85,7 +85,7 @@ class Cloud():
         # print('cloud after update')
         # print(self.model.state_dict()['stem.0.conv.weight'])
         # exit()
-        def received_dict1
+        del received_dict1
         del received_dict2
         return None
 
