@@ -302,6 +302,7 @@ def Hier_Local_QSGD(args):
 
  # This is randomly assign the clients to edges
     for i in range(args.num_edges):
+        torch.cuda.empty_cache()
         #Randomly select clients and assign them
         np.random.seed(args.seed)
         selected_cids = np.random.choice(cids, clients_per_edge[i], replace=False)

@@ -86,7 +86,8 @@ class Edge():
         received_dict2 = [dict['cshared_state_dict2'] for dict in self.receiver_buffer.values()]
         self.update_state_dict1 = average_weights(w = received_dict1, s_num= sample_num, args = args)
         self.update_state_dict2 = average_weights(w = received_dict2, s_num= sample_num, args = args)
-
+        del received_dict1
+        del received_dict2
         # sd = self.model.state_dict()
         # for key in sd.keys():
         #     sd[key]= torch.add(self.model.state_dict()[key], self.update_state_dict[key])
@@ -135,6 +136,8 @@ class Edge():
         message = {'update_state_dict1': self.update_state_dict1, 'update_state_dict2': self.update_state_dict2}
         cloud.receive_from_edge(edge_id=self.id,
                                 message = message)
+        del self.update_state_dict1
+        del self.update_state_dict2
         return None
 
     def receive_from_cloudserver(self, shared_state_dict):

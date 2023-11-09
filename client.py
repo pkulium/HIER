@@ -119,6 +119,9 @@ class Client():
         edgeserver.receive_from_client(client_id= self.id,
                                         message = message
                                         )
+        del cshared_state_dict1
+        del cshared_state_dict2
+        del message
 
     def receive_from_edgeserver(self, shared_state_dict):
         self.receiver_buffer = shared_state_dict
