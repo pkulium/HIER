@@ -30,7 +30,7 @@ def contra(args):
             # a_inv = modinv(args.a[i], args.p)
             # g_inv = modinv(args.g, args.p)
             # last_layer = ((args.cos_client_ref[i] * a_inv) % args.p * g_inv) % args.p
-            last_layer = (args.cos_client_ref[i] + args.p * a_inv) % args.p
+            last_layer = (args.cos_client_ref[i] * a_inv) % args.p
             last_layer[last_layer > args.p // 2] -= args.p      
             last_layer = uncast_from_range(last_layer, args.g)
             if i == 5:
@@ -40,8 +40,8 @@ def contra(args):
                 print(torch.min(last_layer))
             # last_layer /= args.p 
             # last_layer = last_layer / args.g
-            # if torch.linalg.norm(last_layer) > 1:
-                # last_layer /= torch.linalg.norm(last_layer) 
+            if torch.linalg.norm(last_layer) > 1:
+                last_layer /= torch.linalg.norm(last_layer) 
             args.cos_client_ref0[i] += last_layer
         cos_client_ref = args.cos_client_ref0
         epsilon = 1e-9
