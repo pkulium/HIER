@@ -22,7 +22,7 @@ from fednn.mnist_linear import mnist_linear
 from fednn.cifar100mobilenet import mobilenet
 from utils.contra import contra
 
-
+DEBUG = True
 
 def validate_state_dicts(model_state_dict_1, model_state_dict_2):
     if len(model_state_dict_1) != len(model_state_dict_2):
@@ -355,7 +355,7 @@ def Hier_Local_QSGD(args):
         for i in range(args.num_clients):
             total += args.a[i] * args.c[0] % args.p + args.b[i] * args.c[1] % args.p 
             total %= args.p
-        if num_comm % 10 == 0:
+        if num_comm % 10 == 0 or DEBUG:
             print("client weights:", args.client_learning_rate)
             print("reconstruct client weights:", [(args.a[i] * args.c[0] + args.b[i] * args.c[1]) % args.p for i in range(args.num_clients)]) 
             print(f'weight total:{total}')
