@@ -32,7 +32,7 @@ def args_parser():
     parser.add_argument(
         '--batch_size',
         type = int,
-        default = 10,
+        default = 32,
         help = 'batch size when trained on client'
     )
     parser.add_argument(
@@ -44,7 +44,7 @@ def args_parser():
     parser.add_argument(
         '--num_local_update',
         type=int,
-        default=200,
+        default=100,
         help='number of local update (tau_1)'
     )
     parser.add_argument(
