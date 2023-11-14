@@ -76,7 +76,7 @@ class Cloud():
         for key in update_state_dict1:
             self.update_state_dict[key] = update_state_dict1[key] * args.c[0] % args.p + update_state_dict2[key] * args.c[1] % args.p 
             self.update_state_dict[key] %= args.p
-            self.update_state_dict[key][self.update_state_dict[key] > args.g * args.w] -= args.p
+            # self.update_state_dict[key][self.update_state_dict[key] > args.g * args.w] -= args.p
             self.update_state_dict[key] = uncast_from_range(self.update_state_dict[key], args.g * args.w) - 1
         sd = self.model.state_dict()
         for key in sd.keys():
