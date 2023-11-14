@@ -35,9 +35,10 @@ def contra(args):
             last_layer = uncast_from_range(last_layer, args.g)
             if i == 5:
                 print('after'  + '-' * 64) 
-                # print(last_layer)
                 print(torch.max(last_layer))
                 print(torch.min(last_layer))
+                print(f'a:{args.a[i]}')
+                print(f'a_inv:{a_inv}')
             # last_layer /= args.p 
             # last_layer = last_layer / args.g
             if torch.linalg.norm(last_layer) > 1:
