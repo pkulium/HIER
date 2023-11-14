@@ -254,7 +254,7 @@ def args_parser():
     parser.add_argument(
         '--num_reference',
         type=int,
-        default = -1000,
+        default = -7840,
         help='num_reference'
     )
 
