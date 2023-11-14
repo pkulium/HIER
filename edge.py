@@ -117,6 +117,7 @@ class Edge():
             # if torch.linalg.norm(last_layer) > 1:
                 # last_layer /= torch.linalg.norm(last_layer) 
             matmul = args.reference.to('cpu').matmul(last_layer.to('cpu'))
+            matmul = matmul % args.p
             args.cos_client_ref[client_id] = matmul.to('cuda:0')
             # args.cos_client_ref[client_id] = args.reference.matmul(last_layer)
             # if client_id == 5:
