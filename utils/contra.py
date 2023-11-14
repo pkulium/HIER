@@ -9,8 +9,8 @@ def uncast_from_range(scaled_values, scale):
 
 def cal_similarity(x, y):
     # Ensuring no division by zero
-    y[y == 0] = 1e-12
-    y[y == 0] = 1e-12
+    y[y == 0] = 1e-18
+    y[y == 0] = 1e-18
 
     # Calculating max(x_i/y_i, y_i/x_i) for each element
     max_ratios = torch.max(x / y, y / x)
@@ -78,8 +78,8 @@ def contra(args):
             for j in range(n):
                 if i == j:
                     continue
-                # cs[i][j] = cos(cos_client_ref[i].float(), cos_client_ref[j].float()).item()
-                cs[i][j] = cal_similarity(cos_client_ref[i], cos_client_ref[j]).item()
+                cs[i][j] = cos(cos_client_ref[i].float(), cos_client_ref[j].float()).item()
+                # cs[i][j] = cal_similarity(cos_client_ref[i], cos_client_ref[j]).item()
 
         maxcs = torch.max(cs, dim = 1).values + epsilon
         for i in range(n):
