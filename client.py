@@ -91,10 +91,10 @@ class Client():
         # xi = self.args.xi[self.id].state_dict()
         for key in cshared_state_dict0:
             # cshared_state_dict1[key] = (cast_to_range(cshared_state_dict0[key], self.args.g) * self.args.a[self.id] + cast_to_range(gamma[key], self.args.g)) 
-            cshared_state_dict1[key] = (cast_to_range(cshared_state_dict0[key] + 1, self.args.g) % self.args.p) * self.args.a[self.id] 
+            cshared_state_dict1[key] = (cast_to_range(cshared_state_dict0[key], self.args.g) % self.args.p) * self.args.a[self.id] 
             cshared_state_dict1[key] %= self.args.p
             # cshared_state_dict2[key] = (cast_to_range(cshared_state_dict0[key], self.args.g) * self.args.b[self.id] + cast_to_range(xi[key], self.args.g)) 
-            cshared_state_dict2[key] = (cast_to_range(cshared_state_dict0[key] + 1, self.args.g) % self.args.p) * self.args.b[self.id] 
+            cshared_state_dict2[key] = (cast_to_range(cshared_state_dict0[key], self.args.g) % self.args.p) * self.args.b[self.id] 
             cshared_state_dict2[key] %= self.args.p
             if key == 'fc2.weight' or key == 'fc_layer.6.weight':
                 snap_shoot = torch.flatten(cshared_state_dict0[key])
