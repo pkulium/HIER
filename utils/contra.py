@@ -7,6 +7,24 @@ def cast_to_range(values, scale):
 def uncast_from_range(scaled_values, scale):
     return scaled_values / scale
 
+def cal_similarity(x, y):
+    # Ensuring no division by zero
+    y[y == 0] = 1e-12
+    y[y == 0] = 1e-12
+
+    # Calculating max(x_i/y_i, y_i/x_i) for each element
+    max_ratios = torch.max(x / y, y / x)
+
+    # Calculating min(max(x_i/y_i, y_i/x_i)) and max(max(x_i/y_i, y_i/x_i))
+    min_of_max_ratios = torch.min(max_ratios)
+    max_of_max_ratios = torch.max(max_ratios)
+
+    # Calculating the final ratio
+    final_ratio = min_of_max_ratios / max_of_max_ratios
+    print(final_ratio)
+    return final_ratio
+
+
 def modinv(a, m):
     def egcd(a, b):
         if a == 0:
@@ -60,7 +78,8 @@ def contra(args):
             for j in range(n):
                 if i == j:
                     continue
-                cs[i][j] = cos(cos_client_ref[i].float(), cos_client_ref[j].float()).item()
+                # cs[i][j] = cos(cos_client_ref[i].float(), cos_client_ref[j].float()).item()
+                cs[i][j] = cal_similarity(cos_client_ref[i].float(), cos_client_ref[j].float())
 
         maxcs = torch.max(cs, dim = 1).values + epsilon
         for i in range(n):
