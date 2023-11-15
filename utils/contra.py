@@ -9,7 +9,7 @@ def uncast_from_range(scaled_values, scale):
 
 def cal_similarity(x, y):
     # Ensuring no division by zero
-    y[y == 0] = 1e-18
+    x[x == 0] = 1e-18
     y[y == 0] = 1e-18
 
     # Calculating max(x_i/y_i, y_i/x_i) for each element
