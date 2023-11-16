@@ -78,8 +78,8 @@ def contra(args):
             for j in range(n):
                 if i == j:
                     continue
-                # cs[i][j] = cos(cos_client_ref[i].float(), cos_client_ref[j].float()).item()
-                cs[i][j] = cal_similarity(cos_client_ref[i], cos_client_ref[j]).item()
+                cs[i][j] = cos(cos_client_ref[i].float(), cos_client_ref[j].float()).item()
+                # cs[i][j] = cal_similarity(cos_client_ref[i], cos_client_ref[j]).item()
 
         maxcs = torch.max(cs, dim = 1).values + epsilon
         for i in range(n):
