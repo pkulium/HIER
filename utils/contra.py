@@ -55,8 +55,6 @@ def contra(args):
                 logging.info('after'  + '-' * 64) 
                 logging.info(torch.max(last_layer))
                 logging.info(torch.min(last_layer))
-                logging.info(f'a:{args.a[i]}')
-                logging.info(f'a_inv:{a_inv}')
             # last_layer /= args.p 
             # last_layer = last_layer / args.g
             if torch.linalg.norm(last_layer) > 1:
