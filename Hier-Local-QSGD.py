@@ -207,6 +207,8 @@ def Hier_Local_QSGD(args):
         torch.cuda.manual_seed(args.seed)
         cuda_to_use = torch.device(f'cuda:{args.gpu}')
     device = cuda_to_use if torch.cuda.is_available() else "cpu"
+    logging.basicConfig(filename=f'/work/LAS/wzhang-lab/mingl/code/HIER/{FILEOUT}.log', level=logging.INFO, 
+                    format='%(asctime)s:%(levelname)s:%(message)s')
     logging.info(f'Using device {device}')
     FILEOUT = f"{args.dataset}_c{args.num_clients}_e{args.num_edges}_trainr{args.train_ratio}" \
               f"t1-{args.num_local_update}_t2-{args.num_edge_aggregation}" \
@@ -217,8 +219,6 @@ def Hier_Local_QSGD(args):
               f"ec{args.clients_per_edge}ea_uni{args.edge_average_uniform}" \
               f"_at-{args.attack}_honest{args.num_honest_client}" \
               f"_g{args.g}_w{args.w}_r{args.num_reference}" 
-    logging.basicConfig(filename=f'{FILEOUT}.log', level=logging.INFO, 
-                    format='%(asctime)s:%(levelname)s:%(message)s')
     logging.info(FILEOUT)
     logging.info(f'Args parser is {args}')
     writer = SummaryWriter(comment=FILEOUT)
