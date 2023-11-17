@@ -8,7 +8,7 @@ from utils.average_weights import average_weights
 from utils.average_weights import average_weights_cloud
 from utils.contra import contra
 import torch
-
+import logging
 
 def cast_to_range(values, scale):
     return torch.round(values * scale).to(torch.long) 
@@ -48,7 +48,7 @@ class Cloud():
         :param args:
         :return:
         """
-        # print('Average Old')
+        # logging.info('Average Old')
         # first make the state_dict and sample into num
         # The following code may cause some problem? I am not sure whether values keeps the values int the original order
         # But when the data sample number is the same,  this is not a problem
@@ -82,8 +82,8 @@ class Cloud():
         for key in sd.keys():
             sd[key] = torch.add(self.model.state_dict()[key], self.update_state_dict[key])
         self.model.load_state_dict(sd)
-        # print('cloud after update')
-        # print(self.model.state_dict()['stem.0.conv.weight'])
+        # logging.info('cloud after update')
+        # logging.info(self.model.state_dict()['stem.0.conv.weight'])
         # exit()
         del received_dict1
         del received_dict2

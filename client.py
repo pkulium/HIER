@@ -10,7 +10,7 @@ import torch
 from fednn.intialize_model import initialize_model
 import copy
 from utils.quantization import quantization_nn
-
+import logging
 def cast_to_range(values, scale):
     return torch.round(values * scale).to(torch.long) 
 
@@ -82,8 +82,8 @@ class Client():
         # self.q_update = quantization_nn(self.q_update, compression_ratio, q_method)
         # if compute_real_q:
         #     real_q = self.compute_real_q(fp_update)
-        # print('client after update')
-        # print(self.model.nn_layers.state_dict()['stem.0.conv.weight'])
+        # logging.info('client after update')
+        # logging.info(self.model.nn_layers.state_dict()['stem.0.conv.weight'])
         cshared_state_dict0 = copy.deepcopy(self.q_update.nn_layers.state_dict())
         cshared_state_dict1 = {}
         cshared_state_dict2 = {}
@@ -111,10 +111,10 @@ class Client():
             # last_gamma = torch.flatten(args.gamma[client_id].state_dict()['linear.weight'])
         # args.cos_client_ref[client_id] = args.reference.matmul(last_layer)
         if self.id == 5:
-            print('before' + '-' * 64) 
-            # print(snap_shoot)
-            print(torch.max(snap_shoot))
-            print(torch.min(snap_shoot))
+            logging.info('before' + '-' * 64) 
+            # logging.info(snap_shoot)
+            logging.info(torch.max(snap_shoot))
+            logging.info(torch.min(snap_shoot))
         message = {'cshared_state_dict1': cshared_state_dict1, 'cshared_state_dict2': cshared_state_dict2}
         edgeserver.receive_from_client(client_id= self.id,
                                         message = message

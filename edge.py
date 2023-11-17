@@ -12,7 +12,7 @@ from utils.average_weights import average_weights_edge
 from fednn.intialize_model import initialize_model
 import torch
 from utils.quantization import quantization_nne
-
+import logging
 
 def cast_to_range(values, scale):
     return torch.round(values * scale).to(torch.long) 
@@ -92,8 +92,8 @@ class Edge():
         # for key in sd.keys():
         #     sd[key]= torch.add(self.model.state_dict()[key], self.update_state_dict[key])
         # self.model.load_state_dict(sd)
-        # print('edge after update')
-        # print(self.model.state_dict()['stem.0.conv.weight'])
+        # logging.info('edge after update')
+        # logging.info(self.model.state_dict()['stem.0.conv.weight'])
         def flatten_list_of_tensors(tensors):
             flattened_tensors = []
             for tensor in tensors:
@@ -121,7 +121,7 @@ class Edge():
             args.cos_client_ref[client_id] = matmul.to('cuda:0')
             # args.cos_client_ref[client_id] = args.reference.matmul(last_layer)
             # if client_id == 5:
-                # print(args.cos_client_ref[client_id])
+                # logging.info(args.cos_client_ref[client_id])
            
 
     def send_to_client(self, client):

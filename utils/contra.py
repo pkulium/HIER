@@ -1,5 +1,5 @@
 import torch
-
+import logging
         
 def cast_to_range(values, scale):
     return torch.round(values * scale).to(torch.long) 
@@ -21,7 +21,7 @@ def cal_similarity(x, y):
 
     # Calculating the final ratio
     final_ratio = min_of_max_ratios / max_of_max_ratios
-    print(final_ratio)
+    logging.info(final_ratio)
     return final_ratio
 
 
@@ -52,11 +52,11 @@ def contra(args):
             last_layer[last_layer > args.p // 2] -= args.p      
             last_layer = uncast_from_range(last_layer, args.g)
             if i == 5:
-                print('after'  + '-' * 64) 
-                print(torch.max(last_layer))
-                print(torch.min(last_layer))
-                print(f'a:{args.a[i]}')
-                print(f'a_inv:{a_inv}')
+                logging.info('after'  + '-' * 64) 
+                logging.info(torch.max(last_layer))
+                logging.info(torch.min(last_layer))
+                logging.info(f'a:{args.a[i]}')
+                logging.info(f'a_inv:{a_inv}')
             # last_layer /= args.p 
             # last_layer = last_layer / args.g
             if torch.linalg.norm(last_layer) > 1:

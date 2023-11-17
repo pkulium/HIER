@@ -21,12 +21,14 @@ from fednn.resnet import resnet18
 from fednn.mnist_linear import mnist_linear
 from fednn.cifar100mobilenet import mobilenet
 from utils.contra import contra
+import logging
+
 
 DEBUG = True
 
 def validate_state_dicts(model_state_dict_1, model_state_dict_2):
     if len(model_state_dict_1) != len(model_state_dict_2):
-        print(
+        logging.info(
             f"Length mismatch: {len(model_state_dict_1)}, {len(model_state_dict_2)}"
         )
         return False
@@ -46,7 +48,7 @@ def validate_state_dicts(model_state_dict_1, model_state_dict_2):
         model_state_dict_1.items(), model_state_dict_2.items()
     ):
         if k_1 != k_2:
-            print(f"Key mismatch: {k_1} vs {k_2}")
+            logging.info(f"Key mismatch: {k_1} vs {k_2}")
             return False
         # convert both to the same CUDA device
         if str(v_1.device) != "cuda:0":
@@ -55,8 +57,8 @@ def validate_state_dicts(model_state_dict_1, model_state_dict_2):
             v_2 = v_2.to("cuda:0" if torch.cuda.is_available() else "cpu")
 
         if not torch.allclose(v_1, v_2):
-            print(f"Tensor mismatch: {v_1} vs {v_2}")
-            print(f'mismatch key{k_1}')
+            logging.info(f"Tensor mismatch: {v_1} vs {v_2}")
+            logging.info(f'mismatch key{k_1}')
             return False
 
 
@@ -162,13 +164,13 @@ def get_reference(num_reference, dimension):
 @torch.no_grad()
 def init_weights(m):
     if hasattr(m, 'weight'):
-        # print(m)
-        # print(m.weight)
+        # logging.info(m)
+        # logging.info(m.weight)
         # nn.init.xavier_normal_(m.weight)
         # nn.init.zeros_(m.bias)
         nn.init.zeros_(m.weight)
         nn.init.zeros_(m.bias)
-        # print(m.weight)
+        # logging.info(m.weight)
         
 def cast_to_range(values, scale):
     return torch.round(values * scale).to(torch.long) 
@@ -205,7 +207,7 @@ def Hier_Local_QSGD(args):
         torch.cuda.manual_seed(args.seed)
         cuda_to_use = torch.device(f'cuda:{args.gpu}')
     device = cuda_to_use if torch.cuda.is_available() else "cpu"
-    print(f'Using device {device}')
+    logging.info(f'Using device {device}')
     FILEOUT = f"{args.dataset}_c{args.num_clients}_e{args.num_edges}_trainr{args.train_ratio}" \
               f"t1-{args.num_local_update}_t2-{args.num_edge_aggregation}" \
               f"q_de-{args.q_de}_q_ec-{args.q_ec}-q_m{args.q_method}-iid{args.iid}-a{args.alpha}"\
@@ -215,8 +217,10 @@ def Hier_Local_QSGD(args):
               f"ec{args.clients_per_edge}ea_uni{args.edge_average_uniform}" \
               f"_at-{args.attack}_honest{args.num_honest_client}" \
               f"_g{args.g}_w{args.w}_r{args.num_reference}" 
-    print(FILEOUT)
-    print(f'Args parser is {args}')
+    logging.basicConfig(filename=f'{FILEOUT}.log', level=logging.INFO, 
+                    format='%(asctime)s:%(levelname)s:%(message)s')
+    logging.info(FILEOUT)
+    logging.info(f'Args parser is {args}')
     writer = SummaryWriter(comment=FILEOUT)
     # Build dataloaders
     train_loaders, test_loaders, v_train_loader, v_test_loader = get_dataset(args.dataset_root, args.dataset, args)
@@ -224,19 +228,19 @@ def Hier_Local_QSGD(args):
         # show trainloader distribution
         for i in range(args.num_clients):
             train_loader = train_loaders[i]
-            print(len(train_loader.dataset))
+            logging.info(len(train_loader.dataset))
             distribution = show_distribution(train_loader, args)
-            print("train dataloader {} distribution".format(i))
-            print(distribution)
+            logging.info("train dataloader {} distribution".format(i))
+            logging.info(distribution)
         # # show testloader distribution
         # for i in range(args.num_clients):
         #     test_loader = test_loaders[i]
         #     test_size = len(test_loaders[i].dataset)
-        #     print(len(test_loader.dataset))
+        #     logging.info(len(test_loader.dataset))
         #     distribution = show_distribution(test_loader, args)
-        #     print("test dataloader {} distribution".format(i))
-        #     print(f"test dataloader size {test_size}")
-        #     print(distribution)
+        #     logging.info("test dataloader {} distribution".format(i))
+        #     logging.info(f"test dataloader size {test_size}")
+        #     logging.info(distribution)
     # initialize clients and server
     clients = []
     length = len(train_loaders[0].dataset.idxs)
@@ -297,7 +301,7 @@ def Hier_Local_QSGD(args):
     else:
         clients_per_edge = [int(item) for item in args.clients_per_edge.split(',')]
 
-    print(type(clients_per_edge))
+    logging.info(type(clients_per_edge))
     p_clients = [0.0] * args.num_edges
 
  # This is randomly assign the clients to edges
@@ -357,10 +361,10 @@ def Hier_Local_QSGD(args):
             total += args.a[i] * args.c[0] % args.p + args.b[i] * args.c[1] % args.p 
             total %= args.p
         if num_comm % 10 == 0 or DEBUG:
-            print("client weights:", args.client_learning_rate)
-            print("reconstruct client weights:", [(args.a[i] * args.c[0] + args.b[i] * args.c[1]) % args.p for i in range(args.num_clients)]) 
-            print(f'weight total:{total}')
-            print(f'reconstruct weight total:{uncast_from_range(total, args.w)}')
+            logging.info("client weights:", args.client_learning_rate)
+            logging.info("reconstruct client weights:", [(args.a[i] * args.c[0] + args.b[i] * args.c[1]) % args.p for i in range(args.num_clients)]) 
+            logging.info(f'weight total:{total}')
+            logging.info(f'reconstruct weight total:{uncast_from_range(total, args.w)}')
         for num_edgeagg in range(args.num_edge_aggregation):
             for i,edge in enumerate(edges):
                 edge.refresh_edgeserver()
@@ -391,14 +395,14 @@ def Hier_Local_QSGD(args):
                 # #     for the use of debugging
                 # correct, total = clients[0].test_model(device)
                 # acc = correct / total
-                # print(f'acc before aggregation is {acc}')
+                # logging.info(f'acc before aggregation is {acc}')
                 # edge_loss[i] = client_loss
                 # edge_sample[i] = sum(edge.sample_registration.values())
 
                 edge.aggregate(args)
         # args.client_learning_rate = contra(args.cos_client_ref)
         # args.edge_learning_rate = {edge.id: sum([args.client_learning_rate[client_id] for client_id in edge.id_registration]) for edge in edges}
-        # print(args.edge_learning_rate)
+        # logging.info(args.edge_learning_rate)
         # Now begin the cloud aggregation
         for edge in edges:
             edge.send_to_cloudserver(cloud, args.q_ec, args.q_method)
@@ -410,7 +414,7 @@ def Hier_Local_QSGD(args):
         # # for debugging
         # correct, total = clients[0].test_model(device)
         # acc = correct / total
-        # print(f'client acc after aggregation is {acc}')
+        # logging.info(f'client acc after aggregation is {acc}')
 
         # # for debugging
         # sd_client = clients[0].model.shared_layers.state_dict()
@@ -420,9 +424,9 @@ def Hier_Local_QSGD(args):
         #     dif_ce = torch.add(sd_client[key], -sd_edge[key])
         #     dif_cc = torch.add(sd_client[key], -sd_cloud[key])
         #     if dif_ce.sum().data > 1e-5:
-        #         print(f'Key is {key}, dif client & edge')
+        #         logging.info(f'Key is {key}, dif client & edge')
         #     if dif_cc.sum().data > 1e-5:
-        #         print(f'Key is {key}, dif client & cloud')
+        #         logging.info(f'Key is {key}, dif client & cloud')
 
         # Use the virtual testloader for testing
         # sd_client = clients[0].model.nn_layers.state_dict()
@@ -457,22 +461,22 @@ def Hier_Local_QSGD(args):
         if args.verbose:
             # correct_c, all_c = clients[0].test_model(device)
             # acc_c = correct_c / all_c
-            # print(f'client test acc {acc_c} at comm round {num_comm+1}')
-            print(f'epoch is {clients[0].epoch}')
-            print(f'accumulated num_batches is {clients[0].num_batches}')
-            print(f'epoch_th is {clients[0].epoch_th}')
-            clients[0].model.print_current_lr()
-            print(f'All_Avg_Test_Acc_cloudagg_Vtest{avg_acc_v} at comm round{num_comm+1}')
-            print(f'Glbal_TrainLoss{global_trainloss}at comm round{num_comm+1}')
+            # logging.info(f'client test acc {acc_c} at comm round {num_comm+1}')
+            logging.info(f'epoch is {clients[0].epoch}')
+            logging.info(f'accumulated num_batches is {clients[0].num_batches}')
+            logging.info(f'epoch_th is {clients[0].epoch_th}')
+            clients[0].model.logging.info_current_lr()
+            logging.info(f'All_Avg_Test_Acc_cloudagg_Vtest{avg_acc_v} at comm round{num_comm+1}')
+            logging.info(f'Glbal_TrainLoss{global_trainloss}at comm round{num_comm+1}')
     total_all_v, attack_all_v = fast_all_clients_test_attack(v_test_loader, global_nn, device, args)
     if args.attack != 'backdoor_attack':
         attack_sussess_rate = attack_all_v / total_all_v
     else:
         attack_sussess_rate = attack_all_v / (total_all_v / 5)
     writer.close()
-    print(f"The final best virtual acc is {best_avg_acc}")
-    print(f'The final best virtual train loss is {best_train_loss}')
-    print(f'The final best attack sussess rate is {attack_sussess_rate}')
+    logging.info(f"The final best virtual acc is {best_avg_acc}")
+    logging.info(f'The final best virtual train loss is {best_train_loss}')
+    logging.info(f'The final best attack sussess rate is {attack_sussess_rate}')
 
 
 def main():
