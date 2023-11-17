@@ -465,7 +465,7 @@ def Hier_Local_QSGD(args):
             logging.info(f'epoch is {clients[0].epoch}')
             logging.info(f'accumulated num_batches is {clients[0].num_batches}')
             logging.info(f'epoch_th is {clients[0].epoch_th}')
-            clients[0].model.logging.info_current_lr()
+            # clients[0].model.print_current_lr()
             logging.info(f'All_Avg_Test_Acc_cloudagg_Vtest{avg_acc_v} at comm round{num_comm+1}')
             logging.info(f'Glbal_TrainLoss{global_trainloss}at comm round{num_comm+1}')
     total_all_v, attack_all_v = fast_all_clients_test_attack(v_test_loader, global_nn, device, args)
