@@ -331,16 +331,16 @@ def Hier_Local_QSGD(args):
 
     #New an NN model for testing error
     global_nn = initialize_global_nn(args)
-    torch.save(global_nn, f'./runs/global_nn.pth')
+    # torch.save(global_nn, f'./runs/global_nn.pth')
     if args.cuda:
         global_nn = global_nn.cuda(device)
-    total_all_v, attack_all_v = fast_all_clients_test_attack(v_test_loader, global_nn, device, args)
-    attack_sussess_rate = attack_all_v / total_all_v
-    print(f'attack_all_v:{attack_all_v}')
-    print(f'total_all_v:{total_all_v}')
-    writer.close()
-    logging.info(f'The final best attack sussess rate is {attack_sussess_rate}')
-    exit()
+    # total_all_v, attack_all_v = fast_all_clients_test_attack(v_test_loader, global_nn, device, args)
+    # attack_sussess_rate = attack_all_v / total_all_v
+    # print(f'attack_all_v:{attack_all_v}')
+    # print(f'total_all_v:{total_all_v}')
+    # writer.close()
+    # logging.info(f'The final best attack sussess rate is {attack_sussess_rate}')
+    # exit()
 
     best_avg_acc = 0.0
     best_train_loss = 100000
@@ -478,12 +478,12 @@ def Hier_Local_QSGD(args):
     if args.attack != 'backdoor_attack':
         attack_sussess_rate = attack_all_v / total_all_v
     else:
-        attack_sussess_rate = attack_all_v / (total_all_v / 5)
+        attack_sussess_rate = attack_all_v / total_all_v
     writer.close()
     logging.info(f"The final best virtual acc is {best_avg_acc}")
     logging.info(f'The final best virtual train loss is {best_train_loss}')
     logging.info(f'The final best attack sussess rate is {attack_sussess_rate}')
-    torch.save(global_nn, f'./runs/global_nn.pth')
+    torch.save(global_nn, f'./runs/global_nn_4_by_4.pth')
 
 
 def main():
