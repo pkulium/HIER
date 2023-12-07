@@ -344,8 +344,6 @@ def Hier_Local_QSGD(args):
     else:
         attack_sussess_rate = attack_all_v / (total_all_v / 5)
     writer.close()
-    logging.info(f"The final best virtual acc is {best_avg_acc}")
-    logging.info(f'The final best virtual train loss is {best_train_loss}')
     logging.info(f'The final best attack sussess rate is {attack_sussess_rate}')
     exit()
 
