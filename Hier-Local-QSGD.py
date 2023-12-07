@@ -468,7 +468,6 @@ def Hier_Local_QSGD(args):
             # clients[0].model.print_current_lr()
             logging.info(f'All_Avg_Test_Acc_cloudagg_Vtest{avg_acc_v} at comm round{num_comm+1}')
             logging.info(f'Glbal_TrainLoss{global_trainloss}at comm round{num_comm+1}')
-    torch.save(global_nn, f'./runs/global_nn.pth')
     total_all_v, attack_all_v = fast_all_clients_test_attack(v_test_loader, global_nn, device, args)
     if args.attack != 'backdoor_attack':
         attack_sussess_rate = attack_all_v / total_all_v
@@ -478,6 +477,7 @@ def Hier_Local_QSGD(args):
     logging.info(f"The final best virtual acc is {best_avg_acc}")
     logging.info(f'The final best virtual train loss is {best_train_loss}')
     logging.info(f'The final best attack sussess rate is {attack_sussess_rate}')
+    torch.save(global_nn, f'./runs/global_nn.pth')
 
 
 def main():
