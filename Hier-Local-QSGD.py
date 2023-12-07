@@ -84,14 +84,12 @@ def fast_all_clients_test_attack(v_test_loader, global_nn, device, args):
         with torch.no_grad():
             for data in v_test_loader:
                 inputs, labels = data
-                if total_all < index:
-                    inputs[:, 0, 0:1, 0:1] = 255
+                inputs[:, 0, 0:1, 0:1] = 255
                 inputs = Variable(inputs).to(device)
                 labels = Variable(labels).to(device)
                 outputs = global_nn(inputs)
                 _, predicts = torch.max(outputs, 1)
-                if total_all < index:
-                    attack += sum((predicts == 7).logical_and(labels != 7))
+                attack += sum((predicts == 7).logical_and(labels != 7))
                 total_all += sum(labels != 7)
     else:   
         with torch.no_grad():
