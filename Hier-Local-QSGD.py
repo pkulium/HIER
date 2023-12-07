@@ -341,6 +341,8 @@ def Hier_Local_QSGD(args):
     total_all_v, attack_all_v = fast_all_clients_test_attack(v_test_loader, global_nn, device, args)
     if args.attack != 'backdoor_attack':
         attack_sussess_rate = attack_all_v / total_all_v
+        print(f'attack_all_v:{attack_all_v}')
+        print(f'total_all_v:{total_all_v}')
     writer.close()
     logging.info(f'The final best attack sussess rate is {attack_sussess_rate}')
     exit()
