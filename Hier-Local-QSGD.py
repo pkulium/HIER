@@ -193,7 +193,7 @@ def modinv(a, m):
 def get_modulus(g, w, c):
     """Returns a prime number larger than g * w * c"""
     from sympy import nextprime
-    extra = 1
+    extra = 2
     return nextprime(g * w * c * extra)
 
 def Hier_Local_QSGD(args):
@@ -269,6 +269,8 @@ def Hier_Local_QSGD(args):
                      
     args.c = args.num_clients // args.num_edges
     args.p = torch.tensor(get_modulus(args.g, args.w, args.c), dtype=torch.long)
+    print(f'args.c:{args.c}')
+    print(f'args.p:{args.p}')
     shared_layers = copy.deepcopy(clients[0].model.nn_layers)
     if args.model == 'lenet' or args.model == 'linear':
         last_layer = torch.flatten(shared_layers.fc2.weight)
