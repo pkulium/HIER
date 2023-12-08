@@ -80,7 +80,6 @@ def fast_all_clients_test_attack(v_test_loader, global_nn, device, args):
     total_all = 0.0
     attack = 0.0
     if args.attack == 'backdoor_attack':
-        index = len(v_test_loader.dataset.dataset.targets) // 5
         with torch.no_grad():
             for data in v_test_loader:
                 inputs, labels = data
