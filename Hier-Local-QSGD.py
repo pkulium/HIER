@@ -269,8 +269,6 @@ def Hier_Local_QSGD(args):
                      
     args.c = args.num_clients // args.num_edges
     args.p = torch.tensor(get_modulus(args.g, args.w, args.c), dtype=torch.long)
-    print(f'args.c:{args.c}')
-    print(f'args.p:{args.p}')
     shared_layers = copy.deepcopy(clients[0].model.nn_layers)
     if args.model == 'lenet' or args.model == 'linear':
         last_layer = torch.flatten(shared_layers.fc2.weight)
@@ -356,18 +354,10 @@ def Hier_Local_QSGD(args):
         args.cos_client_ref = [0] * args.num_clients
         # args.cos_gamma_qref = [0] * args.num_clients
         total = 0
-        print(f'args.a:{args.a}')
-        print(f'args.c:{args.c}')
-        print(f'args.b:{args.b}')
         for i in range(args.num_clients):
             total += (args.a[i] * args.c[0]) % args.p + (args.b[i] * args.c[1]) % args.p 
             total %= args.p
-        if num_comm % 10 == 0:
-            print(f"client weights: {args.client_learning_rate}")
-            print(f"reconstruct client weights:{[((args.a[i] * args.c[0]) % args.p + (args.b[i] * args.c[1]) % args.p) % args.p for i in range(args.num_clients)]}") 
-            print(f'weight total:{total}')
-            print(f'reconstruct weight total:{uncast_from_range(total, args.w)}')
-
+        if num_comm % 10 == 0 or True:
             logging.info(f"client weights: {args.client_learning_rate}")
             logging.info(f"reconstruct client weights:{[((args.a[i] * args.c[0]) % args.p + (args.b[i] * args.c[1]) % args.p) % args.p for i in range(args.num_clients)]}") 
             logging.info(f'weight total:{total}')
