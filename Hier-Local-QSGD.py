@@ -193,7 +193,7 @@ def modinv(a, m):
 def get_modulus(g, w, c):
     """Returns a prime number larger than g * w * c"""
     from sympy import nextprime
-    extra = 2
+    extra = 1
     return nextprime(g * w * c * extra)
 
 def Hier_Local_QSGD(args):
@@ -354,7 +354,7 @@ def Hier_Local_QSGD(args):
             # args.gamma[i].apply(init_weights)
             # args.xi[i].apply(init_weights)
         args.cos_client_ref = [0] * args.num_clients
-        # args.cos_gamma_ref = [0] * args.num_clients
+        # args.cos_gamma_qref = [0] * args.num_clients
         total = 0
         print(f'args.a:{args.a}')
         print(f'args.c:{args.c}')
