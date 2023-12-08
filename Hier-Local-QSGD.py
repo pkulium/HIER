@@ -356,6 +356,9 @@ def Hier_Local_QSGD(args):
         args.cos_client_ref = [0] * args.num_clients
         # args.cos_gamma_ref = [0] * args.num_clients
         total = 0
+        print(f'args.a:{args.a}')
+        print(f'args.c:{args.c}')
+        print(f'args.b:{args.b}')
         for i in range(args.num_clients):
             total += (args.a[i] * args.c[0]) % args.p + (args.b[i] * args.c[1]) % args.p 
             total %= args.p
