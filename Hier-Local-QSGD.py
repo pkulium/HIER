@@ -84,7 +84,7 @@ def fast_all_clients_test_attack(v_test_loader, global_nn, device, args):
         with torch.no_grad():
             for data in v_test_loader:
                 inputs, labels = data
-                inputs[:, 0, 0:4, 0:4] = 255
+                inputs[:, 0, 0:1, 0:1] = 255
                 inputs = Variable(inputs).to(device)
                 labels = Variable(labels).to(device)
                 outputs = global_nn(inputs)
@@ -99,7 +99,7 @@ def fast_all_clients_test_attack(v_test_loader, global_nn, device, args):
                 labels = Variable(labels).to(device)
                 outputs = global_nn(inputs)
                 _, predicts = torch.max(outputs, 1)
-                total_all += labels.size(0)
+                total_all += sum(labels != 7)
                 attack += sum((predicts != labels).logical_and(predicts == 7))
     return total_all, attack
 
@@ -257,7 +257,7 @@ def Hier_Local_QSGD(args):
             elif args.attack == 'backdoor_attack':
                 for idx in clients[i].train_loader.dataset.idxs:
                     clients[i].train_loader.dataset.dataset.targets[idx] = 7
-                    clients[i].train_loader.dataset.dataset.data[idx, 0:4, 0:4] = 255
+                    clients[i].train_loader.dataset.dataset.data[idx, 0:1, 0:1] = 255
             else:
                 if args.attack == 'coordinate_attack0':
                     clients[i].train_loader.dataset.idxs = clients[i].train_loader.dataset.idxs 
@@ -475,10 +475,7 @@ def Hier_Local_QSGD(args):
             logging.info(f'All_Avg_Test_Acc_cloudagg_Vtest{avg_acc_v} at comm round{num_comm+1}')
             logging.info(f'Glbal_TrainLoss{global_trainloss}at comm round{num_comm+1}')
     total_all_v, attack_all_v = fast_all_clients_test_attack(v_test_loader, global_nn, device, args)
-    if args.attack != 'backdoor_attack':
-        attack_sussess_rate = attack_all_v / total_all_v
-    else:
-        attack_sussess_rate = attack_all_v / total_all_v
+    attack_sussess_rate = attack_all_v / total_all_v
     writer.close()
     logging.info(f"The final best virtual acc is {best_avg_acc}")
     logging.info(f'The final best virtual train loss is {best_train_loss}')
