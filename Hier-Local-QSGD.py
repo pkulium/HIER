@@ -346,7 +346,7 @@ def Hier_Local_QSGD(args):
         [cloud.edge_register(edge=edge) for edge in edges]
         args.c = torch.randint(1, args.p, (2, ), dtype = torch.long)
         args.a = torch.randint(0, args.p, (args.num_clients, ), dtype = torch.long)
-        args.b = (args.client_learning_rate - args.a * args.c[0]) % args.p * modinv(args.c[1], args.p)
+        args.b = (args.client_learning_rate - (args.a * args.c[0]) % args.p) % args.p * modinv(args.c[1], args.p)
         args.b %= args.p
         # for i in range(args.num_clients):
             # args.gamma[i].apply(init_weights)
