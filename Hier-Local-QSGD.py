@@ -357,7 +357,7 @@ def Hier_Local_QSGD(args):
         for i in range(args.num_clients):
             total += (args.a[i] * args.c[0]) % args.p + (args.b[i] * args.c[1]) % args.p 
             total %= args.p
-        if num_comm % 10 == 0 or True:
+        if num_comm % 10 == 0:
             logging.info(f"client weights: {args.client_learning_rate}")
             logging.info(f"reconstruct client weights:{[((args.a[i] * args.c[0]) % args.p + (args.b[i] * args.c[1]) % args.p) % args.p for i in range(args.num_clients)]}") 
             logging.info(f'weight total:{total}')
