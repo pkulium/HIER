@@ -254,7 +254,10 @@ def Hier_Local_QSGD(args):
                 for idx in clients[i].train_loader.dataset.idxs:
                     clients[i].train_loader.dataset.dataset.targets[idx] = 7
             elif args.attack == 'backdoor_attack':
+                size = len(clients[i].train_loader.dataset.idxs)
                 for idx in clients[i].train_loader.dataset.idxs:
+                    if idx >= size // 2:
+                        break
                     clients[i].train_loader.dataset.dataset.targets[idx] = 7
                     clients[i].train_loader.dataset.dataset.data[idx, 0:2, 0:2] = 255
             else:
